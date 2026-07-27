@@ -25,24 +25,42 @@ cd Chaski_app
 
 ## 2. Base de datos
 
-1. Arrancá MySQL (si usás XAMPP, abrí el panel de control y iniciá el módulo **MySQL**).
-2. Creá la base y cargá el esquema + datos de prueba, parado en la raíz del proyecto (donde está `chaski_db.sql`):
+Arrancá MySQL primero (si usás XAMPP, abrí el panel de control y iniciá el módulo **MySQL**). Después, para crear la base e importar `chaski_db.sql`, elegí una de estas dos opciones según lo que tengas instalado.
 
-   ```
-   mysql -u root --default-character-set=utf8mb4 -e "source chaski_db.sql"
-   ```
+> El script crea la base `chaskiDB`, todas las tablas y datos de prueba (usuarios, negocios, sucursales, productos).
 
-   > ⚠️ **Importante si estás en Windows**: usá el comando de arriba tal cual, con `-e "source ..."`, y **no** la forma `mysql -u root < chaski_db.sql`. Esa redirección con `<` funciona en cmd.exe y en bash, pero **no existe en PowerShell** (tira el error `El operador '<' está reservado para uso futuro`) — y PowerShell es la terminal que abre Windows por defecto. El comando con `source` funciona igual en cmd, PowerShell y bash, así que evitás el problema directamente.
+### Opción A — Por línea de comandos (XAMPP o MySQL con el cliente en el PATH)
 
-   Si `mysql` no está en el PATH (típico con XAMPP en Windows), usá la ruta completa al ejecutable, ajustando según dónde lo hayas instalado:
+Parado en la raíz del proyecto (donde está `chaski_db.sql`):
 
-   ```
-   "C:\xampp\mysql\bin\mysql.exe" -u root --default-character-set=utf8mb4 -e "source chaski_db.sql"
-   ```
+```
+mysql -u root --default-character-set=utf8mb4 -e "source chaski_db.sql"
+```
 
-   > El script crea la base `chaskiDB`, todas las tablas y datos de prueba (usuarios, negocios, sucursales, productos). Si tu MySQL tiene contraseña para `root`, agregá `-p` al comando y te la va a pedir.
+> ⚠️ **Importante si estás en Windows**: usá el comando de arriba tal cual, con `-e "source ..."`, y **no** la forma `mysql -u root < chaski_db.sql`. Esa redirección con `<` funciona en cmd.exe y en bash, pero **no existe en PowerShell** (tira el error `El operador '<' está reservado para uso futuro`) — y PowerShell es la terminal que abre Windows por defecto. El comando con `source` funciona igual en cmd, PowerShell y bash, así que evitás el problema directamente.
 
-3. Revisá `app.py` (líneas ~20-24): por defecto asume usuario `root` **sin contraseña** en `localhost`. Si tu MySQL tiene otra configuración, editá esas líneas:
+Si te tira `mysql no se reconoce como un comando` (no tenés el cliente en el PATH — típico si solo instalaste XAMPP o solo MySQL Workbench sin el Server), usá la ruta completa al ejecutable en vez de solo `mysql`, ajustando según dónde lo tengas instalado:
+
+```
+"C:\xampp\mysql\bin\mysql.exe" -u root --default-character-set=utf8mb4 -e "source chaski_db.sql"
+```
+
+Si no tenés XAMPP y tampoco encontrás el ejecutable, probá con la opción B de abajo.
+
+### Opción B — Con MySQL Workbench (sin usar la terminal)
+
+Si tenés Workbench instalado, es más simple importar el archivo directo desde ahí:
+
+1. Abrí MySQL Workbench y conectate a tu servidor local (la conexión que ya tengas configurada, normalmente `root` + tu contraseña).
+2. Andá a **File → Open SQL Script...** y seleccioná el archivo `chaski_db.sql` del proyecto.
+3. Ejecutá el script completo con el botón del rayo ⚡ (o `Ctrl+Shift+Enter`).
+4. Debería correr sin errores y crear la base `chaskiDB` con todas las tablas y datos de prueba. Si ves un error de sintaxis, revisá que se haya abierto el archivo completo y no una selección parcial.
+
+> Nota: si usás la Opción A por línea de comandos y tu MySQL tiene contraseña para `root`, agregá `-p` al comando y te la va a pedir.
+
+### Configurá la conexión (si hace falta)
+
+Revisá `app.py` (líneas ~20-24): por defecto asume usuario `root` **sin contraseña** en `localhost`. Si tu MySQL tiene otra configuración (otra contraseña, otro usuario), editá esas líneas:
 
    ```python
    app.config["MYSQL_HOST"] = "localhost"
