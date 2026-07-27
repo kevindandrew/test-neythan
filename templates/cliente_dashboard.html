@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaski Delivery - Panel de Cliente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Chaski Delivery - Cliente</a>
+            <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <!-- Datos del Cliente -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>Mis Datos</h4>
+                <p class="mb-1"><strong>Nombre:</strong> <span id="perfil-nombre">Cargando...</span></p>
+                <p class="mb-0"><strong>Celular:</strong> <span id="perfil-celular">Cargando...</span></p>
+            </div>
+        </div>
+
+        <!-- Mis Pedidos y Estados -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Mis Pedidos y Estados</h5>
+            </div>
+            <div class="card-body" id="contenedor-mis-pedidos">
+                <p class="text-muted">Cargando tus pedidos...</p>
+            </div>
+        </div>
+
+        <!-- Sucursales Disponibles -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5>Sucursales</h5>
+            </div>
+            <div class="card-body" id="contenedor-sucursales">
+                <p class="text-muted">Cargando sucursales...</p>
+            </div>
+        </div>
+
+        <!-- Productos de la Sucursal Seleccionada -->
+        <div class="card shadow-sm" id="seccion-productos" style="display:none;">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 id="titulo-sucursal">Productos</h5>
+                <button class="btn btn-success btn-sm" onclick="irASeleccionarRepartidor()">Hacer Pedido</button>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Costo (Bs.)</th>
+                            <th>Stock</th>
+                            <th>Cantidad</th>
+                            <th>Seleccionar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-productos">
+                        <!-- Productos dinamicos -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        let sucursalSeleccionada = null;
+
+        if (!token) {
+            alert("No hay sesión activa.");
+            window.location.href = '/';
+        }
+
+        async function cargarPerfil() {
+            try {
+                const res = await fetch('/api/cliente/perfil', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.status === 401) {
+                    cerrarSesion();
+                    return;
+                }
+
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('perfil-nombre').textContent = `${data.nombre} ${data.apellido}`;
+                    document.getElementById('perfil-celular').textContent = data.telefono;
+                }
+            } catch (e) {
+                console.error("Error al cargar perfil", e);
+            }
+        }
+
+        async function cargarMisPedidos() {
+            try {
+                const res = await fetch('/api/cliente/pedidos', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    cerrarSesion();
+                    return;
+                }
+
+                const contenedor = document.getElementById('contenedor-mis-pedidos');
+                
+                if (res.ok) {
+                    const pedidos = await res.json();
+                    contenedor.innerHTML = '';
+
+                    if (pedidos.length === 0) {
+                        contenedor.innerHTML = '<p class="text-muted">Aún no has realizado ningún pedido.</p>';
+                        return;
+                    }
+
+                    pedidos.forEach(p => {
+                        let badgeColor = 'bg-secondary';
+                        if (p.estado === 'Pendiente') badgeColor = 'bg-warning text-dark';
+                        else if (p.estado === 'En Camino') badgeColor = 'bg-info text-dark';
+                        else if (p.estado === 'Entregado' || p.estado === 'Terminado') badgeColor = 'bg-success';
+
+                        let botonAccion = '';
+                        if (p.estado !== 'Entregado' && p.estado !== 'Terminado') {
+                            botonAccion = `<button class="btn btn-sm btn-outline-success mt-2" onclick="marcarEntregado(${p.id_pedido})">Marcar como Entregado / Terminado</button>`;
+                        } else {
+                            botonAccion = `<a href="/api/factura/${p.id_pedido}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">Ver / Descargar Factura</a>`;
+                        }
+
+                        contenedor.innerHTML += `
+                            <div class="border rounded p-3 mb-2 bg-white shadow-sm d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Pedido #${p.id_pedido}</h6>
+                                    <p class="mb-1 text-muted small">Total: <strong>Bs. ${p.total}</strong></p>
+                                    <span class="badge ${badgeColor}">Estado: ${p.estado}</span>
+                                </div>
+                                <div>
+                                    ${botonAccion}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    contenedor.innerHTML = '<p class="text-danger">No se pudieron cargar los pedidos.</p>';
+                }
+            } catch (e) {
+                console.error("Error al cargar pedidos", e);
+            }
+        }
+
+        async function marcarEntregado(idPedido) {
+            try {
+                const res = await fetch('/api/pedido/estado', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id_pedido: idPedido, estado: 'Entregado' })
+                });
+
+                if (res.status === 401) {
+                    cerrarSesion();
+                    return;
+                }
+
+                if (res.ok) {
+                    alert("¡Pedido marcado como entregado y factura generada con éxito!");
+                    cargarMisPedidos();
+                } else {
+                    const err = await res.json();
+                    alert(err.error || "No se pudo actualizar el estado del pedido.");
+                }
+            } catch (e) {
+                alert("Error de conexión al actualizar el estado.");
+            }
+        }
+
+        async function cargarSucursales() {
+            try {
+                const res = await fetch('/api/sucursales', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    cerrarSesion();
+                    return;
+                }
+
+                if (res.ok) {
+                    const sucursales = await res.json();
+                    const contenedor = document.getElementById('contenedor-sucursales');
+                    contenedor.innerHTML = '';
+                    sucursales.forEach(s => {
+                        contenedor.innerHTML += `
+                            <button class="btn btn-outline-primary m-2" onclick="verProductos(${s.id_sucursal}, '${s.nombre_sucursal}')">
+                                ${s.nombre_sucursal} (${s.direccion})
+                            </button>
+                        `;
+                    });
+                }
+            } catch (e) {
+                console.error("Error al cargar sucursales", e);
+            }
+        }
+
+        async function verProductos(idSucursal, nombre) {
+            sucursalSeleccionada = idSucursal;
+            localStorage.setItem('id_sucursal_activa', idSucursal);
+            document.getElementById('titulo-sucursal').textContent = `Productos de ${nombre}`;
+            document.getElementById('seccion-productos').style.display = 'block';
+
+            try {
+                const res = await fetch(`/api/sucursal/${idSucursal}/productos`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    cerrarSesion();
+                    return;
+                }
+
+                if (res.ok) {
+                    const productos = await res.json();
+                    const tbody = document.getElementById('tabla-productos');
+                    tbody.innerHTML = '';
+                    
+                    if (productos.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay productos en esta sucursal.</td></tr>`;
+                        return;
+                    }
+
+                    productos.forEach(p => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${p.nombre_producto}</td>
+                                <td class="precio">Bs. ${p.precio}</td>
+                                <td>${p.stock}</td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm input-cantidad" value="1" min="1" max="${p.stock}" style="width: 70px;" />
+                                </td>
+                                <td><input type="checkbox" class="producto-check" data-id="${p.id_producto}" data-precio="${p.precio}"></td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (e) {
+                console.error("Error al cargar productos", e);
+            }
+        }
+
+        function irASeleccionarRepartidor() {
+            const filas = document.querySelectorAll('#tabla-productos tr');
+            let detalles = [];
+            let totalGeneral = 0;
+
+            filas.forEach(fila => {
+                const checkbox = fila.querySelector('.producto-check');
+                if (checkbox && checkbox.checked) {
+                    const id_producto = checkbox.dataset.id;
+                    const precio = parseFloat(checkbox.dataset.precio);
+                    const cantidadInput = fila.querySelector('.input-cantidad');
+                    const cantidad = parseInt(cantidadInput.value) || 1;
+
+                    detalles.push({
+                        id_producto: id_producto,
+                        cantidad: cantidad,
+                        precio: precio
+                    });
+                    totalGeneral += (precio * cantidad);
+                }
+            });
+
+            if (detalles.length === 0) {
+                alert("Por favor, selecciona al menos un producto.");
+                return;
+            }
+
+            const pedidoTemporal = {
+                id_sucursal: sucursalSeleccionada,
+                total: totalGeneral,
+                detalles: detalles
+            };
+
+            localStorage.setItem('pedido_temporal', JSON.stringify(pedidoTemporal));
+            window.location.href = '/cliente/repartidores';
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        // Inicializar carga de datos de la página
+        cargarPerfil();
+        cargarMisPedidos();
+        cargarSucursales();
+    </script>
+</body>
+</html>

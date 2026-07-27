@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaski Delivery - Panel de Repartidor</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Chaski Delivery - Repartidor</a>
+            <div class="d-flex align-items-center">
+                <span id="nombre-usuario" class="text-white me-3">Cargando...</span>
+                <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        
+        <div class="row">
+            <!-- Tarjeta de Estado del Repartidor -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">Mi Estado Actual</h5>
+                            <p class="text-muted mb-0" id="texto-estado">Verificando estado...</p>
+                        </div>
+                        <button id="btn-cambiar-estado" class="btn btn-primary" onclick="alternarEstado()">Cambiar Estado</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Datos del Repartidor -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-2">Mis Datos</h5>
+                        <p class="mb-1 text-muted"><strong>Nro. Repartidor:</strong> <span id="info-nro">-</span></p>
+                        <p class="mb-1 text-muted"><strong>Cédula (CI):</strong> <span id="info-ci">-</span></p>
+                        <p class="mb-0 text-muted"><strong>Licencia:</strong> <span id="info-licencia">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listado de Pedidos Asignados -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Pedidos Asignados</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID Pedido</th>
+                                <th>Fecha</th>
+                                <th>Estado del Pedido</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pedidos">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Cargando pedidos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
+        const usuarioData = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+        if (!token || rol !== 'repartidor') {
+            window.location.href = '/';
+        } else {
+            document.getElementById('nombre-usuario').textContent = `Hola, ${usuarioData.nombre || 'Repartidor'}`;
+        }
+
+        let estadoActual = 'disponible';
+
+        async function cargarPanelRepartidor() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/repartidor/pedidos', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    estadoActual = data.estado_repartidor;
+                    actualizarInterfazEstado();
+                    renderizarDatosRepartidor(data.repartidor);
+                    renderizarPedidos(data.pedidos);
+                } else if (response.status === 401 || response.status === 403) {
+                    cerrarSesion();
+                } else {
+                    console.error("Error al obtener los datos");
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+            }
+        }
+
+        function renderizarDatosRepartidor(rep) {
+            if (rep) {
+                document.getElementById('info-nro').textContent = rep.nro_repartidor || 'N/A';
+                document.getElementById('info-ci').textContent = rep.ci_repartidor || 'N/A';
+                document.getElementById('info-licencia').textContent = rep.nro_licencia || 'N/A';
+            }
+        }
+
+        function actualizarInterfazEstado() {
+            const textoEstado = document.getElementById('texto-estado');
+            const btnEstado = document.getElementById('btn-cambiar-estado');
+
+            if (estadoActual === 'disponible') {
+                textoEstado.innerHTML = '<span class="badge bg-success">Disponible</span>';
+                btnEstado.textContent = 'Marcar como Ocupado';
+                btnEstado.className = 'btn btn-warning';
+                btnEstado.disabled = false;
+            } else {
+                textoEstado.innerHTML = '<span class="badge bg-secondary">Ocupado</span>';
+                btnEstado.textContent = 'Marcar como Disponible';
+                btnEstado.className = 'btn btn-success';
+            }
+        }
+        async function alternarEstado() {
+            const nuevoEstado = estadoActual === 'disponible' ? 'ocupado' : 'disponible';
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/repartidor/estado', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+
+                if (response.ok) {
+                    estadoActual = nuevoEstado;
+                    actualizarInterfazEstado();
+                } else {
+                    alert("No se pudo actualizar el estado.");
+                }
+            } catch (error) {
+                console.error("Error al conectar con el servidor:", error);
+            }
+        }
+
+        function renderizarPedidos(pedidos) {
+            const tbody = document.getElementById('tabla-pedidos');
+            tbody.innerHTML = '';
+
+            if (!pedidos || pedidos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No tienes pedidos asignados actualmente.</td></tr>`;
+                return;
+            }
+
+            pedidos.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>#${p.id_pedido}</strong></td>
+                    <td>${p.fecha ? new Date(p.fecha).toLocaleString() : 'N/A'}</td>
+                    <td><span class="badge bg-info text-dark">${p.estado_pedido}</span></td>
+                    <td>Bs. ${parseFloat(p.total).toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        cargarPanelRepartidor();
+    </script>
+</body>
+</html>

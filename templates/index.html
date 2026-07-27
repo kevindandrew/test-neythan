@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Chaski Delivery - Login</title>
+    <!-- Usamos Bootstrap CDN solo para que se vea ordenado y limpio -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+
+    <div class="card shadow p-4" style="width: 350px;">
+        <h3 class="text-center mb-3">ChaskiDB Login</h3>
+        
+        <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo electrónico</label>
+                <input type="email" class="form-control" id="correo" required>
+            </div>
+            <div class="mb-3">
+                <label for="contrasena" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="contrasena" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const correo = document.getElementById('correo').value;
+            const contrasena = document.getElementById('contrasena').value;
+            const alertBox = document.getElementById('error-alert');
+
+            alertBox.classList.add('d-none');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo, contrasena })
+            });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('rol', data.rol);
+                localStorage.setItem('usuario', JSON.stringify(data.usuario));
+                
+                if (data.rol === 'cliente') {
+                    window.location.href = '/cliente/panel';
+                } else if (data.rol === 'dueno_negocio') {
+                    window.location.href = '/dashboard';
+                } else if (data.rol === 'repartidor') {
+                    window.location.href = '/repartidor/panel';
+                }
+}
+            } catch (error) {
+                alertBox.textContent = 'No se pudo conectar con el servidor';
+                alertBox.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Chaski Delivery - Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark px-4">
+        <span class="navbar-brand mb-0 h1">Chaski Panel</span>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="card shadow p-4">
+            <h2 id="titulo-bienvenida">Cargando...</h2>
+            <p id="info-rol" class="text-muted"></p>
+            <hr>
+            <div id="contenido-dinamico">
+                <p>Cargando datos protegidos del servidor...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const token = localStorage.getItem('token');
+            const rol = localStorage.getItem('rol');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+            if (!token) {
+                window.location.href = '/'; 
+                return;
+            }
+
+            document.getElementById('titulo-bienvenida').textContent = `Hola, ${usuario.nombre || 'Usuario'}`;
+            document.getElementById('info-rol').textContent = `Rol actual en el sistema: ${rol.toUpperCase()}`;
+
+            let urlEndpoint = '';
+            if (rol === 'cliente') {
+                urlEndpoint = '/api/cliente/perfil';
+            } else if (rol === 'repartidor') {
+                urlEndpoint = '/api/repartidor/pedidos';
+            } else if (rol === 'dueno_negocio') {
+                urlEndpoint = '/api/negocio/dashboard';
+            }
+
+            try {
+                const response = await fetch(urlEndpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();    
+                if (response.ok) {
+                    let contenidoHTML = '';
+
+                    // Renderizado según el rol actual
+                    if (rol === 'dueno_negocio') {
+                        const facturas = data.facturas || [];
+                        let filasFacturas = '';
+                        
+                        if (facturas.length > 0) {
+                            facturas.forEach(f => {
+                                filasFacturas += `
+                                    <tr>
+                                        <td>${f.id_factura}</td>
+                                        <td>${f.nit}</td>
+                                        <td>${f.nro_autorizacion}</td>
+                                        <td>${f.tipo_pago}</td>
+                                        <td>Bs ${f.total}</td>
+                                        <td>${f.fecha_emision || 'N/A'}</td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            filasFacturas = `<tr><td colspan="6" class="text-center text-muted">No hay facturas registradas aún.</td></tr>`;
+                        }
+
+                        contenidoHTML = `
+                            <div class="alert alert-success">
+                                <strong>Ganancias Totales:</strong> Bs ${data.ganancias_totales || 0.00}
+                            </div>
+                            <h4 class="mt-4">Facturas Registradas</h4>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>NIT</th>
+                                            <th>Autorización</th>
+                                            <th>Pago</th>
+                                            <th>Total</th>
+                                            <th>Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filasFacturas}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+
+                    } else if (rol === 'repartidor') {
+                        const pedidos = data.pedidos || [];
+                        const estadoActual = data.estado_repartidor || 'disponible';
+                        
+                        let filasPendientes = '';
+                        let filasEntregados = '';
+
+                        if (pedidos.length > 0) {
+                            pedidos.forEach(p => {
+                                const estadoLower = (p.estado_pedido || '').toLowerCase();
+                                const esEntregado = estadoLower === 'entregado' || estadoLower === 'completado';
+                                
+                                const fila = `
+                                    <tr>
+                                        <td>${p.id_pedido}</td>
+                                        <td>${p.fecha || 'N/A'}</td>
+                                        <td><span class="badge bg-${esEntregado ? 'success' : 'warning'}">${p.estado_pedido}</span></td>
+                                        <td>Bs ${p.total}</td>
+                                    </tr>
+                                `;
+
+                                if (esEntregado) {
+                                    filasEntregados += fila;
+                                } else {
+                                    filasPendientes += fila;
+                                }
+                            });
+                        }
+
+                        if (!filasPendientes) filasPendientes = `<tr><td colspan="4" class="text-center text-muted">No tienes pedidos pendientes.</td></tr>`;
+                        if (!filasEntregados) filasEntregados = `<tr><td colspan="4" class="text-center text-muted">No hay historial de entregados.</td></tr>`;
+
+                        contenidoHTML = `
+                            <div class="row align-items-center mb-4">
+                                <div class="col-md-8">
+                                    <div class="alert alert-primary mb-0">
+                                        <strong>Panel de Repartidor:</strong> Gestiona tus entregas asignadas y tu disponibilidad.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <span class="me-2">Estado: <b id="texto-estado" class="text-uppercase">${estadoActual}</b></span>
+                                    <button id="btn-cambiar-estado" class="btn btn-sm btn-${estadoActual === 'ocupado' ? 'success' : 'danger'}" onclick="toggleEstado('${estadoActual}')">
+                                        Cambiar a ${estadoActual === 'ocupado' ? 'Disponible' : 'Ocupado'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4">📦 Pedidos Pendientes (Por entregar)</h4>
+                            <div class="table-responsive mb-4">
+                                <table class="table table-striped table-bordered">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID Pedido</th>
+                                            <th>Fecha</th>
+                                            <th>Estado</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filasPendientes}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <h4 class="mt-4">✅ Pedidos Entregados</h4>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead class="table-secondary">
+                                        <tr>
+                                            <th>ID Pedido</th>
+                                            <th>Fecha</th>
+                                            <th>Estado</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${filasEntregados}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    } else {
+                        contenidoHTML = `<p>Bienvenido al sistema. Selecciona una opción del menú.</p>`;
+                    }
+
+                    document.getElementById('contenido-dinamico').innerHTML = contenidoHTML;
+
+                } else {
+                    document.getElementById('contenido-dinamico').innerHTML = `
+                        <div class="alert alert-danger">Acceso no autorizado: ${data.error || 'Error desconocido'}</div>
+                    `;
+                }
+            } catch (err) {
+                document.getElementById('contenido-dinamico').innerHTML = `<div class="alert alert-danger">Error de conexión con el backend.</div>`;
+            }
+        });
+
+        async function toggleEstado(estadoActualActual) {
+            const token = localStorage.getItem('token');
+            const nuevoEstado = estadoActualActual === 'ocupado' ? 'disponible' : 'ocupado';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/repartidor/estado', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('No se pudo actualizar el estado.');
+                }
+            } catch (err) {
+                console.error("Error de conexión", err);
+                alert('Error de conexión con el servidor.');
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/'; 
+        }
+    </script>
+</body>
+</html>

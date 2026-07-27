@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Dueño de Negocio - Chaski</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark px-4">
+        <span class="navbar-brand mb-0 h1" id="nombre-negocio">Negocio</span>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </nav>
+
+    <div class="container my-4">
+        <!-- Tarjeta de Ganancias -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card bg-success text-white shadow p-3">
+                    <h5>Ganancias Totales Acumuladas</h5>
+                    <h2 id="ganancias-totales">Bs 0.00</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección para Agregar Producto -->
+        <div class="card shadow p-4 mb-4">
+            <h4>Agregar Nuevo Producto</h4>
+            <form id="productoForm" class="row g-3 mt-2">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="nombre" placeholder="Nombre del producto" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="descripcion" placeholder="Descripción">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.01" class="form-control" id="precio" placeholder="Precio (Bs)" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control" id="stock" placeholder="Stock" required>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="select-sucursal" required>
+                        <option value="">Selecciona Sucursal</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                </div>
+            </form>
+            <div class="mb-3 mt-3">
+                <a href="/dashboard/sucursales" class="btn btn-info text-white fw-bold">Ver Detalle por Sucursal</a>
+            </div>
+        </div>
+
+        <!-- Listado de Productos -->
+        <div class="card shadow p-4 mb-4">
+            <h4>Mis Productos Registrados</h4>
+            <table class="table table-striped mt-2">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Sucursal</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-productos">
+                    <tr><td colspan="7" class="text-center">Cargando productos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Listado de Facturas -->
+        <div class="card shadow p-4">
+            <h4>Facturas Registradas</h4>
+            <table class="table table-striped mt-2">
+                <thead>
+                    <tr>
+                        <th>ID Factura</th>
+                        <th>NIT</th>
+                        <th>Nro Autorización</th>
+                        <th>Tipo Pago</th>
+                        <th>Monto Pedido</th>
+                        <th>Fecha Emisión</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-facturas">
+                    <tr><td colspan="6" class="text-center">Cargando facturas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
+
+        if (!token || rol !== 'dueno_negocio') {
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await cargarDatosDashboard();
+            await cargarSucursalesSelect();
+        });
+
+        async function cargarDatosDashboard() {
+            try {
+                const res = await fetch('http://localhost:5000/api/negocio/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('nombre-negocio').textContent = `Negocio: ${data.negocio.nombre_local}`;
+                    document.getElementById('ganancias-totales').textContent = `Bs ${parseFloat(data.ganancias_totales).toFixed(2)}`;
+
+                    // Llenar tabla productos
+                    const tbodyProd = document.getElementById('tabla-productos');
+                    if (data.productos.length > 0) {
+                        tbodyProd.innerHTML = data.productos.map(p => `
+                            <tr>
+                                <td>${p.id_producto}</td>
+                                <td>${p.nombre}</td>
+                                <td>${p.descripcion || '-'}</td>
+                                <td>Bs ${p.precio_unitario}</td>
+                                <td>${p.stock_producto}</td>
+                                <td>${p.sucursal_nombre}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${p.id_producto})">Eliminar</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbodyProd.innerHTML = `<tr><td colspan="7" class="text-center">No hay productos registrados.</td></tr>`;
+                    }
+
+                    // Llenar tabla facturas
+                    const tbodyFac = document.getElementById('tabla-facturas');
+                    if (data.facturas.length > 0) {
+                        tbodyFac.innerHTML = data.facturas.map(f => `
+                            <tr>
+                                <td>${f.id_factura}</td>
+                                <td>${f.nit}</td>
+                                <td>${f.nro_autorizacion}</td>
+                                <td>${f.tipo_pago}</td>
+                                <td>Bs ${f.total}</td>
+                                <td>${f.fecha_emision}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbodyFac.innerHTML = `<tr><td colspan="6" class="text-center">No hay facturas registradas.</td></tr>`;
+                    }
+                }
+            } catch (err) {
+                console.error("Error al cargar dashboard", err);
+            }
+        }
+
+        async function eliminarProducto(id) {
+            if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+
+            try {
+                const res = await fetch(`http://localhost:5000/api/negocio/producto/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Producto eliminado correctamente");
+                    cargarDatosDashboard();
+                } else {
+                    alert(data.error || "No se pudo eliminar el producto");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error de conexión");
+            }
+        }
+
+        async function cargarSucursalesSelect() {
+            const res = await fetch('http://localhost:5000/api/negocio/sucursales', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const sucursales = await res.json();
+            const select = document.getElementById('select-sucursal');
+            select.innerHTML = '<option value="">Selecciona Sucursal</option>';
+            sucursales.forEach(s => {
+                select.innerHTML += `<option value="${s.id_sucursal}">${s.nombre}</option>`;
+            });
+        }
+
+        document.getElementById('productoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                precio_unitario: document.getElementById('precio').value,
+                stock_producto: document.getElementById('stock').value,
+                id_sucursal: document.getElementById('select-sucursal').value
+            };
+
+            const res = await fetch('http://localhost:5000/api/negocio/producto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                alert('Producto agregado con éxito');
+                document.getElementById('productoForm').reset();
+                cargarDatosDashboard();
+            } else {
+                const err = await res.json();
+                alert('Error: ' + err.error);
+            }
+        });
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
