@@ -26,16 +26,18 @@ cd Chaski_app
 ## 2. Base de datos
 
 1. Arrancá MySQL (si usás XAMPP, abrí el panel de control y iniciá el módulo **MySQL**).
-2. Creá la base y cargá el esquema + datos de prueba. Si tenés el cliente de MySQL en el PATH:
+2. Creá la base y cargá el esquema + datos de prueba, parado en la raíz del proyecto (donde está `chaski_db.sql`):
 
-   ```bash
-   mysql -u root < chaski_db.sql
+   ```
+   mysql -u root --default-character-set=utf8mb4 -e "source chaski_db.sql"
    ```
 
-   Si usás XAMPP en Windows y `mysql` no está en el PATH, usá la ruta completa (ajustá según tu instalación):
+   > ⚠️ **Importante si estás en Windows**: usá el comando de arriba tal cual, con `-e "source ..."`, y **no** la forma `mysql -u root < chaski_db.sql`. Esa redirección con `<` funciona en cmd.exe y en bash, pero **no existe en PowerShell** (tira el error `El operador '<' está reservado para uso futuro`) — y PowerShell es la terminal que abre Windows por defecto. El comando con `source` funciona igual en cmd, PowerShell y bash, así que evitás el problema directamente.
 
-   ```bash
-   "C:\xampp\mysql\bin\mysql.exe" -u root --default-character-set=utf8mb4 < chaski_db.sql
+   Si `mysql` no está en el PATH (típico con XAMPP en Windows), usá la ruta completa al ejecutable, ajustando según dónde lo hayas instalado:
+
+   ```
+   "C:\xampp\mysql\bin\mysql.exe" -u root --default-character-set=utf8mb4 -e "source chaski_db.sql"
    ```
 
    > El script crea la base `chaskiDB`, todas las tablas y datos de prueba (usuarios, negocios, sucursales, productos). Si tu MySQL tiene contraseña para `root`, agregá `-p` al comando y te la va a pedir.
@@ -121,6 +123,7 @@ Chaski_app/
 
 ## Problemas comunes
 
+- **`El operador '<' está reservado para uso futuro'` al importar `chaski_db.sql`**: estás en PowerShell, que no soporta `<` para redirección. Usá el comando con `-e "source chaski_db.sql"` que está en el paso 2, no el de `<`.
 - **"No se pudo conectar con el servidor" en el login**: revisá que `python app.py` esté corriendo y no haya tirado un error en la terminal.
 - **Error de conexión a MySQL al arrancar Flask**: el módulo MySQL de XAMPP no está iniciado, o la config de `app.py` (usuario/contraseña) no coincide con tu instalación.
 - **Puerto 5000 u 5173 ocupado**: cerrá cualquier otro proceso que los esté usando, o algún `python app.py` / `npm run dev` que haya quedado corriendo de antes.
