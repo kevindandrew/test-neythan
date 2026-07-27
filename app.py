@@ -4,6 +4,7 @@ from flask_jwt_extended import (
     JWTManager,
     create_access_token,
     get_jwt,
+    get_jwt_identity,
     jwt_required,
 )
 from flask_mysqldb import MySQL
@@ -59,6 +60,11 @@ def cliente_panel():
     return render_template("cliente_dashboard.html")
 
 
+@app.route("/factura/<int:id_pedido>")
+def ver_factura_pagina(id_pedido):
+    return render_template("factura.html", id_pedido=id_pedido)
+
+
 @app.route("/cliente/repartidores")
 def vista_repartidores():
     return render_template("repartidores.html")
@@ -97,7 +103,7 @@ def login():
             return jsonify({"error": "Credenciales inválidas"}), 401
 
         access_token = create_access_token(
-            identity=cliente["ci_cliente"],
+            identity=str(cliente["ci_cliente"]),
             additional_claims={
                 "rol": "cliente",
                 "ci_cliente": cliente["ci_cliente"],
@@ -136,7 +142,7 @@ def login():
             return jsonify({"error": "Credenciales inválidas"}), 401
 
         access_token = create_access_token(
-            identity=negocio["ci_dueno"],
+            identity=str(negocio["ci_dueno"]),
             additional_claims={
                 "rol": "dueno_negocio",
                 "id_negocio": negocio["id_negocio"],
@@ -151,6 +157,7 @@ def login():
                 "usuario": {
                     "ci": negocio["ci_dueno"],
                     "nombre": negocio["nombre"],
+                    "nombre_negocio": negocio["nombre_negocio"],
                     "correo": negocio["correo_negocio"],
                 },
             }),
@@ -175,7 +182,7 @@ def login():
             return jsonify({"error": "Credenciales inválidas"}), 401
 
         access_token = create_access_token(
-            identity=repartidor["ci_repartidor"],
+            identity=str(repartidor["ci_repartidor"]),
             additional_claims={
                 "rol": "repartidor",
                 "nro_repartidor": repartidor["nro_repartidor"],
@@ -198,6 +205,68 @@ def login():
 
     cursor.close()
     return jsonify({"error": "Usuario no encontrado"}), 404
+
+
+# ==========================================
+# ENDPOINT DE REGISTRO UNIFICADO
+# ==========================================
+
+@app.route("/api/registro", methods=["POST"])
+def registro():
+    data = request.get_json()
+    rol = data.get("rol")
+    ci = data.get("ci")
+    nombre = data.get("nombre")
+    apepaterno = data.get("apepaterno")
+    telefono = data.get("telefono")
+    correo = data.get("correo")
+    direccion = data.get("direccion")
+    contrasena = data.get("contrasena")
+
+    nombre_negocio = data.get("nombre_negocio")
+
+    if rol not in ("cliente", "negocio", "repartidor"):
+        return jsonify({"error": "Rol inválido, debe ser cliente, negocio o repartidor"}), 400
+
+    if not ci or not nombre or not correo or (rol != "negocio" and not contrasena):
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
+
+    if rol == "negocio" and not nombre_negocio:
+        return jsonify({"error": "Falta el nombre del negocio"}), 400
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT ci FROM persona WHERE ci = %s OR correo = %s", (ci, correo))
+    if cursor.fetchone():
+        cursor.close()
+        return jsonify({"error": "Ya existe una cuenta con ese CI o correo"}), 409
+
+    cursor.execute(
+        "INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES (%s, %s, %s, %s, %s, %s)",
+        (ci, nombre, apepaterno, telefono, correo, direccion),
+    )
+
+    if rol == "cliente":
+        cursor.execute(
+            "INSERT INTO cliente (ci_cliente, contrasena) VALUES (%s, %s)",
+            (ci, contrasena),
+        )
+    elif rol == "repartidor":
+        nro_licencia = data.get("nro_licencia")
+        cursor.execute(
+            "INSERT INTO repartidor (ci_repartidor, contrasena, nro_licencia) VALUES (%s, %s, %s)",
+            (ci, contrasena, nro_licencia),
+        )
+    elif rol == "negocio":
+        cursor.execute(
+            "INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES (%s, %s, %s)",
+            (nombre_negocio, ci, correo),
+        )
+
+    mysql.connection.commit()
+    cursor.close()
+
+    return jsonify({"mensaje": "Cuenta creada con éxito", "rol": rol}), 201
 
 
 # ==========================================
@@ -322,7 +391,7 @@ def detalle_sucursales_negocio():
         # 3. Pedidos asociados usando 'estado_pedido'
         cursor.execute(
             """
-            SELECT p.fecha,p.id_pedido, p.estado_pedido AS estado, p.total 
+            SELECT DISTINCT p.fecha,p.id_pedido, p.estado_pedido AS estado, p.total
             FROM pedido p
             JOIN detalle_pedido dp ON p.id_pedido = dp.id_pedido
             WHERE dp.id_sucursal = %s
@@ -595,6 +664,50 @@ def obtener_pedidos_repartidor():
     }), 200
 
 
+@app.route("/api/repartidor/pedido/<int:id_pedido>", methods=["GET"])
+@jwt_required()
+def detalle_pedido_repartidor(id_pedido):
+    claims = get_jwt()
+    if claims.get("rol") != "repartidor":
+        return jsonify({"error": "Acceso denegado"}), 403
+
+    ci_repartidor = get_jwt_identity()
+    cursor = mysql.connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT p.id_pedido, p.fecha, p.estado_pedido, p.total,
+               pe.nombre AS cliente_nombre, pe.telefono AS cliente_telefono,
+               pe.direccion AS cliente_direccion
+        FROM pedido p
+        JOIN cliente c ON p.ci_cliente = c.ci_cliente
+        JOIN persona pe ON c.ci_cliente = pe.ci
+        WHERE p.id_pedido = %s AND p.ci_repartidor = %s
+        """,
+        (id_pedido, ci_repartidor),
+    )
+    pedido = cursor.fetchone()
+
+    if not pedido:
+        cursor.close()
+        return jsonify({"error": "Pedido no encontrado"}), 404
+
+    cursor.execute(
+        """
+        SELECT dp.cantidad, pr.nombre, pr.precio_unitario, s.nombre AS sucursal_nombre
+        FROM detalle_pedido dp
+        JOIN producto pr ON dp.id_producto = pr.id_producto
+        JOIN sucursal s ON dp.id_sucursal = s.id_sucursal
+        WHERE dp.id_pedido = %s
+        """,
+        (id_pedido,),
+    )
+    pedido["productos"] = cursor.fetchall()
+    cursor.close()
+
+    return jsonify(pedido), 200
+
+
 @app.route("/api/repartidor/estado", methods=["PUT"])
 @jwt_required()
 def actualizar_estado_repartidor():
@@ -687,8 +800,9 @@ def cambiar_estado_pedido():
     )
 
     # 2. Si el pedido se marca como Entregado o Terminado, generamos la factura automáticamente
+    #    y liberamos al repartidor para que quede disponible para nuevos pedidos
     if str(nuevo_estado).lower() in ['entregado', 'terminado']:
-        cursor.execute("SELECT total, ci_cliente FROM pedido WHERE id_pedido = %s", (id_pedido,))
+        cursor.execute("SELECT total, ci_cliente, ci_repartidor FROM pedido WHERE id_pedido = %s", (id_pedido,))
         pedido = cursor.fetchone()
 
         if pedido:
@@ -700,10 +814,16 @@ def cambiar_estado_pedido():
                 # Insertamos usando las columnas reales de tu tabla factura (nit, nro_autorizacion, fecha_emision, tipo_pago, id_pedido, id_reporte)
                 cursor.execute(
                     """
-                    INSERT INTO factura (nit, nro_autorizacion, fecha_emision, tipo_pago, id_pedido, id_reporte) 
+                    INSERT INTO factura (nit, nro_autorizacion, fecha_emision, tipo_pago, id_pedido, id_reporte)
                     VALUES (%s, %s, NOW(), %s, %s, %s)
                     """,
                     ("123456019", "AUT-2026-001", "Efectivo", id_pedido, 1)
+                )
+
+            if pedido.get("ci_repartidor"):
+                cursor.execute(
+                    "UPDATE repartidor SET estado_disponible = 'disponible' WHERE ci_repartidor = %s",
+                    (pedido["ci_repartidor"],),
                 )
     mysql.connection.commit()
     cursor.close()
@@ -944,6 +1064,48 @@ def listar_pedidos_cliente():
     return jsonify(pedidos), 200
 
 
+@app.route("/api/negocios", methods=["GET"])
+@jwt_required()
+def listar_negocios():
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        """
+        SELECT n.id_negocio, n.nombre_negocio, n.correo_negocio,
+               COUNT(s.id_sucursal) AS cantidad_sucursales
+        FROM negocio n
+        LEFT JOIN sucursal s ON s.id_negocio = n.id_negocio
+        GROUP BY n.id_negocio, n.nombre_negocio, n.correo_negocio
+        """
+    )
+    negocios = cursor.fetchall()
+    cursor.close()
+    return jsonify(negocios), 200
+
+
+@app.route("/api/negocio/<int:id_negocio>/sucursales", methods=["GET"])
+@jwt_required()
+def listar_sucursales_de_negocio(id_negocio):
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        "SELECT id_negocio, nombre_negocio FROM negocio WHERE id_negocio = %s",
+        (id_negocio,),
+    )
+    negocio = cursor.fetchone()
+
+    if not negocio:
+        cursor.close()
+        return jsonify({"error": "Negocio no encontrado"}), 404
+
+    cursor.execute(
+        "SELECT id_sucursal, nombre AS nombre_sucursal, direccion, telefono FROM sucursal WHERE id_negocio = %s",
+        (id_negocio,),
+    )
+    sucursales = cursor.fetchall()
+    cursor.close()
+
+    return jsonify({"negocio": negocio, "sucursales": sucursales}), 200
+
+
 @app.route("/api/sucursales", methods=["GET"])
 @jwt_required()
 def listar_sucursales():
@@ -972,17 +1134,6 @@ def productos_por_sucursal(id_sucursal):
     productos = cursor.fetchall()
     cursor.close()
     return jsonify(productos), 200
-
-
-@app.route("/cliente/repartidores", methods=["GET"])
-@jwt_required()
-def vista_repartidores_disponibles():
-    claims = get_jwt()
-    if claims.get("rol") != "cliente":
-        return jsonify({"error": "Acceso denegado"}), 403
-    # Asegúrate de tener un archivo HTML llamado repartidores.html en tu carpeta templates, 
-    # o puedes retornar una plantilla según tu estructura de frontend.
-    return render_template("repartidores.html")
 
 
 # ==========================================

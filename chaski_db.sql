@@ -28,6 +28,7 @@ CREATE TABLE cliente (
 
 CREATE TABLE negocio (
     id_negocio INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_negocio VARCHAR(150) NOT NULL DEFAULT '',
     ci_dueno INT NOT NULL,
     correo_negocio VARCHAR(150) NOT NULL UNIQUE,
     FOREIGN KEY (ci_dueno) REFERENCES persona(ci)
@@ -132,7 +133,7 @@ INSERT INTO cliente (ci_cliente, contrasena) VALUES (1001, '123456');
 -- (ojo: el login de negocio en app.py usa una contraseña fija "123456", no la de la BD)
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2001, 'Maria', 'Lopez', '70000002', 'negocio@chaski.com', 'Calle Comercio 456');
-INSERT INTO negocio (ci_dueno, correo_negocio) VALUES (2001, 'negocio@chaski.com');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES ('El Buen Sabor', 2001, 'negocio@chaski.com');
 
 -- Repartidor de prueba: repartidor@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
@@ -151,3 +152,55 @@ INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALU
 INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (1, 1), (1, 2);
 
 INSERT INTO tarifa (zona, costo) VALUES ('Centro', 10.00);
+
+-- ==========================================
+-- Negocios adicionales de prueba (para probar el flujo Negocios -> Sucursales)
+-- ==========================================
+
+-- Negocio: Pizza Nostra (pizzanostra@chaski.com / 123456)
+INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
+(2002, 'Roberto', 'Fernandez', '70055002', 'pizzanostra@chaski.com', 'Av. San Martin 200');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES
+('Pizza Nostra', 2002, 'pizzanostra@chaski.com');
+SET @id_pizza = LAST_INSERT_ID();
+
+INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Norte', 'Av. Cristo Redentor 500', '70099101', @id_pizza);
+SET @suc_pizza_norte = LAST_INSERT_ID();
+INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Sur', 'Av. Beni 300', '70099102', @id_pizza);
+SET @suc_pizza_sur = LAST_INSERT_ID();
+
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Pizza Muzzarella', 'Pizza clásica de muzzarella', 45.00, 30);
+SET @prod1 = LAST_INSERT_ID();
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Pizza Pepperoni', 'Pizza con pepperoni', 50.00, 25);
+SET @prod2 = LAST_INSERT_ID();
+INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_pizza_norte, @prod1), (@suc_pizza_norte, @prod2);
+
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Pizza Napolitana', 'Pizza con tomate y albahaca', 48.00, 20);
+SET @prod3 = LAST_INSERT_ID();
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Calzone', 'Empanada italiana rellena', 40.00, 15);
+SET @prod4 = LAST_INSERT_ID();
+INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_pizza_sur, @prod3), (@suc_pizza_sur, @prod4);
+
+-- Negocio: Sushi Ichiban (sushiichiban@chaski.com / 123456)
+INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
+(2003, 'Lucia', 'Vargas', '70055003', 'sushiichiban@chaski.com', 'Av. Monseñor Rivero 150');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES
+('Sushi Ichiban', 2003, 'sushiichiban@chaski.com');
+SET @id_sushi = LAST_INSERT_ID();
+
+INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Equipetrol', 'Calle Portugal 45', '70099201', @id_sushi);
+SET @suc_sushi_equipetrol = LAST_INSERT_ID();
+INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Las Palmas', 'Av. Roca y Coronado 800', '70099202', @id_sushi);
+SET @suc_sushi_palmas = LAST_INSERT_ID();
+
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Sushi California', 'Roll de palta y kanikama', 38.00, 25);
+SET @prod5 = LAST_INSERT_ID();
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Ramen Shoyu', 'Sopa ramen con caldo de soya', 32.00, 20);
+SET @prod6 = LAST_INSERT_ID();
+INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_sushi_equipetrol, @prod5), (@suc_sushi_equipetrol, @prod6);
+
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Gyozas', 'Empanaditas japonesas al vapor', 22.00, 30);
+SET @prod7 = LAST_INSERT_ID();
+INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Té Verde Helado', 'Bebida fría', 12.00, 40);
+SET @prod8 = LAST_INSERT_ID();
+INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_sushi_palmas, @prod7), (@suc_sushi_palmas, @prod8);
