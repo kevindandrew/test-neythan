@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  LayoutDashboard,
-  Store,
   Plus,
   X,
   Package,
@@ -15,11 +13,7 @@ import { useAuth } from '../auth/AuthContext';
 import AppShell from '../components/AppShell';
 import EstadoBadge from '../components/EstadoBadge';
 import SimpleBarChart from '../components/SimpleBarChart';
-
-const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/dashboard/sucursales', label: 'Sucursales', icon: Store },
-];
+import { NEGOCIO_NAV_ITEMS } from './NegocioDashboard';
 
 const initialForm = { nombre: '', direccion: '' };
 
@@ -124,7 +118,7 @@ export default function NegocioSucursales() {
   }
 
   return (
-    <AppShell roleLabel={usuario?.nombre_negocio || 'Negocio'} navItems={NAV_ITEMS}>
+    <AppShell roleLabel={usuario?.nombre_negocio || 'Negocio'} navItems={NEGOCIO_NAV_ITEMS}>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-slate-800">Desglose Detallado por Sucursal</h2>

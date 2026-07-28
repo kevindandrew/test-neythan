@@ -8,6 +8,7 @@ const ROL_HOME = {
   cliente: '/cliente/panel',
   dueno_negocio: '/dashboard',
   repartidor: '/repartidor/panel',
+  admin: '/admin/panel',
 };
 
 const initialRegistro = {
@@ -315,28 +316,26 @@ export default function Login() {
                   className={plainInputClass}
                 />
               </div>
-              {registro.rol !== 'negocio' && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Contraseña</label>
-                  <Field icon={Lock}>
-                    <input
-                      type={verContrasenaRegistro ? 'text' : 'password'}
-                      required
-                      value={registro.contrasena}
-                      onChange={(e) => updateRegistro('contrasena', e.target.value)}
-                      className={`${inputClass} pr-10`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setVerContrasenaRegistro((v) => !v)}
-                      aria-label={verContrasenaRegistro ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      {verContrasenaRegistro ? <EyeOff size={17} /> : <Eye size={17} />}
-                    </button>
-                  </Field>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Contraseña</label>
+                <Field icon={Lock}>
+                  <input
+                    type={verContrasenaRegistro ? 'text' : 'password'}
+                    required
+                    value={registro.contrasena}
+                    onChange={(e) => updateRegistro('contrasena', e.target.value)}
+                    className={`${inputClass} pr-10`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setVerContrasenaRegistro((v) => !v)}
+                    aria-label={verContrasenaRegistro ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {verContrasenaRegistro ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </Field>
+              </div>
               <button
                 type="submit"
                 disabled={cargando}

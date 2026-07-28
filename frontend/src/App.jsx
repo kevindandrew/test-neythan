@@ -3,13 +3,22 @@ import { AuthProvider } from './auth/AuthContext';
 import RequireRole from './components/RequireRole';
 import Login from './pages/Login';
 import ClientePanel from './pages/ClientePanel';
-import ClienteHacerPedido from './pages/ClienteHacerPedido';
 import ClienteMisPedidos from './pages/ClienteMisPedidos';
-import ClienteRepartidores from './pages/ClienteRepartidores';
+import ClienteFavoritos from './pages/ClienteFavoritos';
 import NegocioDashboard from './pages/NegocioDashboard';
 import NegocioSucursales from './pages/NegocioSucursales';
+import NegocioProductos from './pages/NegocioProductos';
+import NegocioReportes from './pages/NegocioReportes';
 import RepartidorPanel from './pages/RepartidorPanel';
-import RepartidorEntregas from './pages/RepartidorEntregas';
+import RepartidorEntregarPedido from './pages/RepartidorEntregarPedido';
+import RepartidorVehiculo from './pages/RepartidorVehiculo';
+import RepartidorComisiones from './pages/RepartidorComisiones';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminPersonas from './pages/AdminPersonas';
+import AdminClientes from './pages/AdminClientes';
+import AdminRepartidores from './pages/AdminRepartidores';
+import AdminNegocios from './pages/AdminNegocios';
+import AdminProductos from './pages/AdminProductos';
 import Factura from './pages/Factura';
 
 export default function App() {
@@ -28,14 +37,6 @@ export default function App() {
             }
           />
           <Route
-            path="/cliente/hacer-pedido"
-            element={
-              <RequireRole role="cliente">
-                <ClienteHacerPedido />
-              </RequireRole>
-            }
-          />
-          <Route
             path="/cliente/mis-pedidos"
             element={
               <RequireRole role="cliente">
@@ -44,10 +45,10 @@ export default function App() {
             }
           />
           <Route
-            path="/cliente/repartidores"
+            path="/cliente/favoritos"
             element={
               <RequireRole role="cliente">
-                <ClienteRepartidores />
+                <ClienteFavoritos />
               </RequireRole>
             }
           />
@@ -68,6 +69,22 @@ export default function App() {
               </RequireRole>
             }
           />
+          <Route
+            path="/dashboard/productos"
+            element={
+              <RequireRole role="dueno_negocio">
+                <NegocioProductos />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/dashboard/reportes"
+            element={
+              <RequireRole role="dueno_negocio">
+                <NegocioReportes />
+              </RequireRole>
+            }
+          />
 
           <Route
             path="/repartidor/panel"
@@ -78,10 +95,75 @@ export default function App() {
             }
           />
           <Route
-            path="/repartidor/entregas"
+            path="/repartidor/entregar-pedido"
             element={
               <RequireRole role="repartidor">
-                <RepartidorEntregas />
+                <RepartidorEntregarPedido />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/repartidor/vehiculo"
+            element={
+              <RequireRole role="repartidor">
+                <RepartidorVehiculo />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/repartidor/comisiones"
+            element={
+              <RequireRole role="repartidor">
+                <RepartidorComisiones />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/panel"
+            element={
+              <RequireRole role="admin">
+                <AdminDashboard />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/personas"
+            element={
+              <RequireRole role="admin">
+                <AdminPersonas />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/clientes"
+            element={
+              <RequireRole role="admin">
+                <AdminClientes />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/repartidores"
+            element={
+              <RequireRole role="admin">
+                <AdminRepartidores />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/negocios"
+            element={
+              <RequireRole role="admin">
+                <AdminNegocios />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/productos"
+            element={
+              <RequireRole role="admin">
+                <AdminProductos />
               </RequireRole>
             }
           />

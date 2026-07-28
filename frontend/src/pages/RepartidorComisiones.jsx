@@ -9,7 +9,6 @@ import {
   X,
   PackageCheck,
   Wallet,
-  Hourglass,
   MapPin,
   Phone,
   ShoppingBag,
@@ -19,7 +18,7 @@ import { REPARTIDOR_NAV_ITEMS } from './RepartidorPanel';
 
 const ESTADOS_FINALIZADOS = ['entregado', 'terminado'];
 
-export default function RepartidorEntregas() {
+export default function RepartidorComisiones() {
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -40,7 +39,7 @@ export default function RepartidorEntregas() {
       const data = await api.get('/api/repartidor/pedidos');
       setPedidos(data.pedidos || []);
     } catch (err) {
-      setError(err.message || 'No se pudieron cargar tus entregas.');
+      setError(err.message || 'No se pudieron cargar tus comisiones.');
     } finally {
       setCargando(false);
     }
@@ -70,8 +69,10 @@ export default function RepartidorEntregas() {
   const pedidosEntregados = pedidos.filter((p) =>
     ESTADOS_FINALIZADOS.includes(String(p.estado_pedido).toLowerCase())
   );
-  const pedidosActivos = pedidos.length - pedidosEntregados.length;
-  const totalEntregado = pedidosEntregados.reduce((acc, p) => acc + parseFloat(p.total || 0), 0);
+  const comisionAcumulada = pedidosEntregados.reduce(
+    (acc, p) => acc + parseFloat(p.comision || 0),
+    0
+  );
 
   return (
     <AppShell roleLabel="Repartidor" navItems={REPARTIDOR_NAV_ITEMS}>
@@ -80,26 +81,31 @@ export default function RepartidorEntregas() {
           <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
         )}
 
-        {/* Stat tiles */}
         {!cargando && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <StatTile icon={PackageCheck} label="Pedidos entregados" value={pedidosEntregados.length} />
-            <StatTile icon={Hourglass} label="Pedidos activos" value={pedidosActivos} />
-            <StatTile icon={Wallet} label="Total entregado" value={`Bs ${totalEntregado.toFixed(2)}`} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <StatTile
+              icon={Wallet}
+              label="Comisión acumulada"
+              value={`Bs ${comisionAcumulada.toFixed(2)}`}
+            />
+            <StatTile
+              icon={PackageCheck}
+              label="Pedidos entregados con éxito"
+              value={pedidosEntregados.length}
+            />
           </div>
         )}
 
-        {/* Pedidos Asignados */}
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
             <ClipboardList size={20} className="text-indigo-600" strokeWidth={2} />
-            Mis Entregas
+            Todos mis Pedidos
           </h2>
 
           {cargando ? (
             <p className="text-sm text-slate-400">Cargando pedidos...</p>
           ) : pedidos.length === 0 ? (
-            <p className="text-sm text-slate-400">No tienes pedidos asignados actualmente.</p>
+            <p className="text-sm text-slate-400">Todavía no tomaste ningún pedido.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -107,8 +113,9 @@ export default function RepartidorEntregas() {
                   <tr className="text-left text-slate-500 border-b border-slate-200">
                     <th className="py-2 pr-2">ID Pedido</th>
                     <th className="py-2 pr-2">Fecha</th>
-                    <th className="py-2 pr-2">Estado del Pedido</th>
+                    <th className="py-2 pr-2">Estado</th>
                     <th className="py-2 pr-2">Total</th>
+                    <th className="py-2 pr-2">Comisión</th>
                     <th className="py-2 pr-2">Detalle</th>
                   </tr>
                 </thead>
@@ -124,6 +131,9 @@ export default function RepartidorEntregas() {
                       </td>
                       <td className="py-2 pr-2 text-slate-700">
                         Bs. {parseFloat(p.total).toFixed(2)}
+                      </td>
+                      <td className="py-2 pr-2 text-emerald-600 font-medium">
+                        {p.comision > 0 ? `Bs. ${parseFloat(p.comision).toFixed(2)}` : '—'}
                       </td>
                       <td className="py-2 pr-2">
                         <button

@@ -110,17 +110,18 @@ Y con MySQL corriendo (XAMPP abierto con el módulo MySQL iniciado).
 
 ## Usuarios de prueba
 
-Todas las contraseñas de las cuentas de prueba son `123456`.
+Todas las contraseñas de las cuentas de prueba son `123456`, excepto el Super Administrador.
 
-| Rol | Correo | Notas |
-|---|---|---|
-| Cliente | `cliente@chaski.com` | Juan Perez |
-| Dueño de negocio | `negocio@chaski.com` | Negocio "El Buen Sabor", 1 sucursal |
-| Dueño de negocio | `pizzanostra@chaski.com` | Negocio "Pizza Nostra", 2 sucursales |
-| Dueño de negocio | `sushiichiban@chaski.com` | Negocio "Sushi Ichiban", 2 sucursales |
-| Repartidor | `repartidor@chaski.com` | Carlos Gomez |
+| Rol | Correo | Contraseña | Notas |
+|---|---|---|---|
+| Cliente | `cliente@chaski.com` | `123456` | Juan Perez |
+| Dueño de negocio | `negocio@chaski.com` | `123456` | Negocio "El Buen Sabor", 1 sucursal |
+| Dueño de negocio | `pizzanostra@chaski.com` | `123456` | Negocio "Pizza Nostra", 2 sucursales |
+| Dueño de negocio | `sushiichiban@chaski.com` | `123456` | Negocio "Sushi Ichiban", 2 sucursales |
+| Repartidor | `repartidor@chaski.com` | `123456` | Carlos Gomez |
+| Super Administrador | `admin@chaski.com` | `admin123` | Gestiona personas, clientes, repartidores, negocios y productos |
 
-También podés crear cuentas nuevas desde la pantalla de login (botón "Creá una" / registro), para cualquiera de los 3 roles.
+También podés crear cuentas nuevas desde la pantalla de login (botón "Creá una" / registro), para Cliente, Negocio o Repartidor. El Super Administrador no es autoregistrable: solo existe la cuenta semilla de arriba.
 
 ## Estructura del proyecto
 

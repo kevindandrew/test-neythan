@@ -31,7 +31,15 @@ CREATE TABLE negocio (
     nombre_negocio VARCHAR(150) NOT NULL DEFAULT '',
     ci_dueno INT NOT NULL,
     correo_negocio VARCHAR(150) NOT NULL UNIQUE,
+    contrasena VARCHAR(100) NOT NULL DEFAULT '123456',
     FOREIGN KEY (ci_dueno) REFERENCES persona(ci)
+);
+
+-- Super Usuario Administrador: gestiona personas, clientes, repartidores, negocios y productos
+CREATE TABLE administrador (
+    ci_admin INT PRIMARY KEY,
+    contrasena VARCHAR(100) NOT NULL,
+    FOREIGN KEY (ci_admin) REFERENCES persona(ci)
 );
 
 CREATE TABLE repartidor (
@@ -42,6 +50,15 @@ CREATE TABLE repartidor (
     nro_licencia VARCHAR(50),
     estado_disponible VARCHAR(20) DEFAULT 'disponible',
     FOREIGN KEY (ci_repartidor) REFERENCES persona(ci)
+);
+
+CREATE TABLE vehiculo (
+    ci_repartidor INT PRIMARY KEY,
+    tipo VARCHAR(50) NOT NULL,
+    placa VARCHAR(20) NOT NULL,
+    modelo VARCHAR(50),
+    color VARCHAR(30),
+    FOREIGN KEY (ci_repartidor) REFERENCES repartidor(ci_repartidor)
 );
 
 CREATE TABLE sucursal (
@@ -70,6 +87,16 @@ CREATE TABLE cuenta_con (
     FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
 );
 
+-- Productos favoritos de un cliente
+CREATE TABLE favorito (
+    ci_cliente INT NOT NULL,
+    id_producto INT NOT NULL,
+    fecha_agregado DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (ci_cliente, id_producto),
+    FOREIGN KEY (ci_cliente) REFERENCES cliente(ci_cliente),
+    FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
+);
+
 CREATE TABLE tarifa (
     id_tarifa INT PRIMARY KEY AUTO_INCREMENT,
     zona VARCHAR(100) NOT NULL,
@@ -80,6 +107,7 @@ CREATE TABLE pedido (
     id_pedido INT PRIMARY KEY AUTO_INCREMENT,
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     estado_pedido VARCHAR(30) DEFAULT 'Pendiente',
+    token VARCHAR(5),
     total DECIMAL(10,2) NOT NULL,
     ci_cliente INT NOT NULL,
     ci_repartidor INT,
@@ -130,16 +158,18 @@ INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 INSERT INTO cliente (ci_cliente, contrasena) VALUES (1001, '123456');
 
 -- Dueño de negocio de prueba: negocio@chaski.com / 123456
--- (ojo: el login de negocio en app.py usa una contraseña fija "123456", no la de la BD)
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2001, 'Maria', 'Lopez', '70000002', 'negocio@chaski.com', 'Calle Comercio 456');
-INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES ('El Buen Sabor', 2001, 'negocio@chaski.com');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES ('El Buen Sabor', 2001, 'negocio@chaski.com', '123456');
 
 -- Repartidor de prueba: repartidor@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (3001, 'Carlos', 'Gomez', '70000003', 'repartidor@chaski.com', 'Zona Sur 789');
 INSERT INTO repartidor (ci_repartidor, contrasena, nro_licencia, estado_disponible) VALUES
 (3001, '123456', 'LIC-001', 'disponible');
+
+INSERT INTO vehiculo (ci_repartidor, tipo, placa, modelo, color) VALUES
+(3001, 'Motocicleta', '1234-ABC', 'Honda Wave 110', 'Rojo');
 
 -- Sucursal y productos de ejemplo
 INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES
@@ -160,8 +190,8 @@ INSERT INTO tarifa (zona, costo) VALUES ('Centro', 10.00);
 -- Negocio: Pizza Nostra (pizzanostra@chaski.com / 123456)
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2002, 'Roberto', 'Fernandez', '70055002', 'pizzanostra@chaski.com', 'Av. San Martin 200');
-INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES
-('Pizza Nostra', 2002, 'pizzanostra@chaski.com');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES
+('Pizza Nostra', 2002, 'pizzanostra@chaski.com', '123456');
 SET @id_pizza = LAST_INSERT_ID();
 
 INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Norte', 'Av. Cristo Redentor 500', '70099101', @id_pizza);
@@ -184,8 +214,8 @@ INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_pizza_sur, @prod3
 -- Negocio: Sushi Ichiban (sushiichiban@chaski.com / 123456)
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2003, 'Lucia', 'Vargas', '70055003', 'sushiichiban@chaski.com', 'Av. Monseñor Rivero 150');
-INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio) VALUES
-('Sushi Ichiban', 2003, 'sushiichiban@chaski.com');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES
+('Sushi Ichiban', 2003, 'sushiichiban@chaski.com', '123456');
 SET @id_sushi = LAST_INSERT_ID();
 
 INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Equipetrol', 'Calle Portugal 45', '70099201', @id_sushi);
@@ -204,3 +234,11 @@ SET @prod7 = LAST_INSERT_ID();
 INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Té Verde Helado', 'Bebida fría', 12.00, 40);
 SET @prod8 = LAST_INSERT_ID();
 INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_sushi_palmas, @prod7), (@suc_sushi_palmas, @prod8);
+
+-- ==========================================
+-- Super Usuario Administrador de prueba: admin@chaski.com / admin123
+-- ==========================================
+
+INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
+(9999, 'Admin', 'Chaski', '70000000', 'admin@chaski.com', 'Oficina Central');
+INSERT INTO administrador (ci_admin, contrasena) VALUES (9999, 'admin123');

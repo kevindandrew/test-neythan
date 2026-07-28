@@ -1,0 +1,558 @@
+import { useEffect, useState } from 'react';
+import { Bike, Plus, Pencil, Trash2, X, AlertTriangle, UserPlus } from 'lucide-react';
+import { api } from '../api/client';
+import AppShell from '../components/AppShell';
+import { ADMIN_NAV_ITEMS } from './AdminDashboard';
+
+const ESTADO_BADGE = {
+  disponible: 'bg-emerald-50 text-emerald-700',
+  ocupado: 'bg-amber-50 text-amber-700',
+};
+
+const FORM_INICIAL = {
+  ci: '',
+  nombre: '',
+  apepaterno: '',
+  telefono: '',
+  correo: '',
+  direccion: '',
+  contrasena: '',
+  nro_licencia: '',
+  estado_disponible: 'disponible',
+};
+
+export default function AdminRepartidores() {
+  const [repartidores, setRepartidores] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
+  const [mensaje, setMensaje] = useState('');
+
+  const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
+  const [repartidorEditando, setRepartidorEditando] = useState(null);
+  const [form, setForm] = useState(FORM_INICIAL);
+  const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState('');
+
+  const [repartidorAEliminar, setRepartidorAEliminar] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState('');
+
+  useEffect(() => {
+    cargarRepartidores();
+  }, []);
+
+  async function cargarRepartidores() {
+    setCargando(true);
+    setError('');
+    try {
+      const data = await api.get('/api/admin/repartidores');
+      setRepartidores(data || []);
+    } catch (err) {
+      setError(err.message || 'No se pudieron cargar los repartidores.');
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  function updateForm(campo, valor) {
+    setForm((prev) => ({ ...prev, [campo]: valor }));
+  }
+
+  function abrirModalCrear() {
+    setForm(FORM_INICIAL);
+    setErrorForm('');
+    setModalCrearAbierto(true);
+  }
+
+  function cerrarModalCrear() {
+    setModalCrearAbierto(false);
+    setErrorForm('');
+  }
+
+  function abrirEditar(repartidor) {
+    setForm({
+      ci: repartidor.ci_repartidor,
+      nombre: repartidor.nombre || '',
+      apepaterno: repartidor.apepaterno || '',
+      telefono: repartidor.telefono || '',
+      correo: repartidor.correo || '',
+      direccion: repartidor.direccion || '',
+      contrasena: '',
+      nro_licencia: repartidor.nro_licencia || '',
+      estado_disponible: (repartidor.estado_disponible || 'disponible').toLowerCase(),
+    });
+    setErrorForm('');
+    setRepartidorEditando(repartidor);
+  }
+
+  function cerrarEditar() {
+    setRepartidorEditando(null);
+    setErrorForm('');
+  }
+
+  async function handleCrear(e) {
+    e.preventDefault();
+    setErrorForm('');
+    setGuardando(true);
+    try {
+      await api.post('/api/admin/repartidor', {
+        ci: form.ci,
+        nombre: form.nombre,
+        apepaterno: form.apepaterno,
+        telefono: form.telefono,
+        correo: form.correo,
+        direccion: form.direccion,
+        contrasena: form.contrasena,
+        nro_licencia: form.nro_licencia,
+      });
+      setModalCrearAbierto(false);
+      setForm(FORM_INICIAL);
+      setMensaje('Repartidor agregado con éxito.');
+      await cargarRepartidores();
+    } catch (err) {
+      setErrorForm(err.message || 'No se pudo agregar el repartidor');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function handleEditar(e) {
+    e.preventDefault();
+    setErrorForm('');
+    setGuardando(true);
+    try {
+      const body = {
+        nombre: form.nombre,
+        apepaterno: form.apepaterno,
+        telefono: form.telefono,
+        correo: form.correo,
+        direccion: form.direccion,
+        nro_licencia: form.nro_licencia,
+        estado_disponible: form.estado_disponible,
+      };
+      if (form.contrasena) {
+        body.contrasena = form.contrasena;
+      }
+      await api.put(`/api/admin/repartidor/${repartidorEditando.ci_repartidor}`, body);
+      setRepartidorEditando(null);
+      setMensaje('Repartidor actualizado con éxito.');
+      await cargarRepartidores();
+    } catch (err) {
+      setErrorForm(err.message || 'No se pudo actualizar el repartidor');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  function pedirConfirmacionEliminar(repartidor) {
+    setErrorEliminar('');
+    setRepartidorAEliminar(repartidor);
+  }
+
+  function cancelarEliminar() {
+    setRepartidorAEliminar(null);
+    setErrorEliminar('');
+  }
+
+  async function confirmarEliminar() {
+    if (!repartidorAEliminar) return;
+    setEliminando(true);
+    setErrorEliminar('');
+    try {
+      await api.del(`/api/admin/repartidor/${repartidorAEliminar.ci_repartidor}`);
+      setRepartidorAEliminar(null);
+      setMensaje('Repartidor eliminado con éxito.');
+      await cargarRepartidores();
+    } catch (err) {
+      setErrorEliminar(err.message || 'No se pudo eliminar el repartidor');
+    } finally {
+      setEliminando(false);
+    }
+  }
+
+  return (
+    <AppShell roleLabel="Super Administrador" navItems={ADMIN_NAV_ITEMS}>
+      <div className="space-y-6">
+        {error && (
+          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+        )}
+        {mensaje && (
+          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2">
+            {mensaje}
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+              <Bike size={20} strokeWidth={2} className="text-indigo-600" />
+              Todos los Repartidores Registrados
+            </h3>
+            <button
+              onClick={abrirModalCrear}
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+            >
+              <Plus size={16} strokeWidth={2} />
+              Agregar Repartidor
+            </button>
+          </div>
+
+          {cargando ? (
+            <p className="text-sm text-slate-500">Cargando repartidores...</p>
+          ) : repartidores.length === 0 ? (
+            <p className="text-sm text-slate-500">No hay repartidores registrados.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500">
+                    <th className="py-2 pr-4 font-medium">CI</th>
+                    <th className="py-2 pr-4 font-medium">Nombre</th>
+                    <th className="py-2 pr-4 font-medium">Correo</th>
+                    <th className="py-2 pr-4 font-medium">Teléfono</th>
+                    <th className="py-2 pr-4 font-medium">Nro. Licencia</th>
+                    <th className="py-2 pr-4 font-medium">Estado</th>
+                    <th className="py-2 pr-4 font-medium">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {repartidores.map((r) => {
+                    const estadoLower = (r.estado_disponible || '').toLowerCase();
+                    return (
+                      <tr key={r.ci_repartidor} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="py-2 pr-4">{r.ci_repartidor}</td>
+                        <td className="py-2 pr-4">
+                          {r.nombre} {r.apepaterno}
+                        </td>
+                        <td className="py-2 pr-4">{r.correo}</td>
+                        <td className="py-2 pr-4">{r.telefono || '-'}</td>
+                        <td className="py-2 pr-4">{r.nro_licencia || '-'}</td>
+                        <td className="py-2 pr-4">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                              ESTADO_BADGE[estadoLower] || 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            {r.estado_disponible}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => abrirEditar(r)}
+                              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg px-3 py-1.5 transition"
+                            >
+                              <Pencil size={14} strokeWidth={2} />
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => pedirConfirmacionEliminar(r)}
+                              className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg px-3 py-1.5 transition"
+                            >
+                              <Trash2 size={14} strokeWidth={2} />
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal: Agregar Nuevo Repartidor */}
+      {modalCrearAbierto && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <UserPlus size={20} strokeWidth={2} className="text-indigo-600" />
+                Agregar Nuevo Repartidor
+              </h3>
+              <button
+                onClick={cerrarModalCrear}
+                className="text-slate-400 hover:text-slate-600"
+                aria-label="Cerrar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {errorForm && (
+              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                {errorForm}
+              </div>
+            )}
+
+            <form onSubmit={handleCrear} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">CI</label>
+                <input
+                  type="number"
+                  required
+                  value={form.ci}
+                  onChange={(e) => updateForm('ci', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  required
+                  value={form.nombre}
+                  onChange={(e) => updateForm('nombre', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Apellido</label>
+                <input
+                  type="text"
+                  value={form.apepaterno}
+                  onChange={(e) => updateForm('apepaterno', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+                <input
+                  type="text"
+                  value={form.telefono}
+                  onChange={(e) => updateForm('telefono', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Correo</label>
+                <input
+                  type="email"
+                  required
+                  value={form.correo}
+                  onChange={(e) => updateForm('correo', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+                <input
+                  type="text"
+                  value={form.direccion}
+                  onChange={(e) => updateForm('direccion', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+                <input
+                  type="password"
+                  required
+                  value={form.contrasena}
+                  onChange={(e) => updateForm('contrasena', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Nro. Licencia
+                </label>
+                <input
+                  type="text"
+                  value={form.nro_licencia}
+                  onChange={(e) => updateForm('nro_licencia', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
+                <button
+                  type="button"
+                  onClick={cerrarModalCrear}
+                  disabled={guardando}
+                  className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                >
+                  {guardando ? 'Guardando...' : 'Guardar Repartidor'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Repartidor */}
+      {repartidorEditando && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <Pencil size={20} strokeWidth={2} className="text-indigo-600" />
+                Editar Repartidor (CI {repartidorEditando.ci_repartidor})
+              </h3>
+              <button
+                onClick={cerrarEditar}
+                className="text-slate-400 hover:text-slate-600"
+                aria-label="Cerrar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {errorForm && (
+              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                {errorForm}
+              </div>
+            )}
+
+            <form onSubmit={handleEditar} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  required
+                  value={form.nombre}
+                  onChange={(e) => updateForm('nombre', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Apellido</label>
+                <input
+                  type="text"
+                  value={form.apepaterno}
+                  onChange={(e) => updateForm('apepaterno', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+                <input
+                  type="text"
+                  value={form.telefono}
+                  onChange={(e) => updateForm('telefono', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                <select
+                  value={form.estado_disponible}
+                  onChange={(e) => updateForm('estado_disponible', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="disponible">Disponible</option>
+                  <option value="ocupado">Ocupado</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Correo</label>
+                <input
+                  type="email"
+                  required
+                  value={form.correo}
+                  onChange={(e) => updateForm('correo', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+                <input
+                  type="text"
+                  value={form.direccion}
+                  onChange={(e) => updateForm('direccion', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Nueva contraseña (opcional)
+                </label>
+                <input
+                  type="password"
+                  placeholder="Dejar en blanco para no cambiar"
+                  value={form.contrasena}
+                  onChange={(e) => updateForm('contrasena', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Nro. Licencia
+                </label>
+                <input
+                  type="text"
+                  value={form.nro_licencia}
+                  onChange={(e) => updateForm('nro_licencia', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
+                <button
+                  type="button"
+                  onClick={cerrarEditar}
+                  disabled={guardando}
+                  className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                >
+                  {guardando ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {repartidorAEliminar && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-red-50">
+              <AlertTriangle size={22} strokeWidth={2} className="text-red-600" />
+            </div>
+            <h4 className="text-lg font-semibold text-slate-800 mb-2">Eliminar repartidor</h4>
+            <p className="text-sm text-slate-600 mb-4">
+              ¿Seguro que querés eliminar a «{repartidorAEliminar.nombre} {repartidorAEliminar.apepaterno}»?
+              Esta acción no se puede deshacer.
+            </p>
+            {errorEliminar && (
+              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                {errorEliminar}
+              </div>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelarEliminar}
+                disabled={eliminando}
+                className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarEliminar}
+                disabled={eliminando}
+                className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+              >
+                {eliminando ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AppShell>
+  );
+}

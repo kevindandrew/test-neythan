@@ -1,30 +1,160 @@
 import { useEffect, useState } from 'react';
-import { Home, ShoppingCart, ShoppingBag, User } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Home, Heart, ShoppingBag, Search, Sparkles, Building2, Store, X } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
+import SelectorProductos from '../components/SelectorProductos';
+import { imagenNegocio, imagenProducto } from '../utils/placeholderImage';
 
 export const CLIENTE_NAV_ITEMS = [
   { to: '/cliente/panel', label: 'Inicio', icon: Home },
-  { to: '/cliente/hacer-pedido', label: 'Hacer Pedido', icon: ShoppingCart },
   { to: '/cliente/mis-pedidos', label: 'Mis Pedidos', icon: ShoppingBag },
+  { to: '/cliente/favoritos', label: 'Favoritos', icon: Heart },
 ];
 
 export default function ClientePanel() {
-  const [perfil, setPerfil] = useState(null);
+  const [searchParams] = useSearchParams();
+
+  const [productosFeed, setProductosFeed] = useState([]);
+  const [cargandoFeed, setCargandoFeed] = useState(true);
+
+  const [negocios, setNegocios] = useState([]);
+  const [cargandoNegocios, setCargandoNegocios] = useState(true);
+  const [negocioSeleccionado, setNegocioSeleccionado] = useState(null);
+  const [sucursales, setSucursales] = useState([]);
+  const [cargandoSucursales, setCargandoSucursales] = useState(false);
+
+  const [sucursalActiva, setSucursalActiva] = useState(null);
+
+  const [query, setQuery] = useState('');
+  const [resultados, setResultados] = useState(null);
+  const [buscando, setBuscando] = useState(false);
+
+  const [favoritoIds, setFavoritoIds] = useState(new Set());
+
   const [error, setError] = useState('');
 
   useEffect(() => {
-    cargarPerfil();
+    cargarFeed();
+    cargarNegocios();
+    cargarFavoritoIds();
   }, []);
 
-  async function cargarPerfil() {
+  useEffect(() => {
+    const idSucursal = searchParams.get('sucursal');
+    const nombreSucursal = searchParams.get('nombre');
+    if (idSucursal && nombreSucursal) {
+      setSucursalActiva({ id: Number(idSucursal), nombre: nombreSucursal });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResultados(null);
+      return;
+    }
+    const idTimeout = setTimeout(() => buscar(query), 350);
+    return () => clearTimeout(idTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  async function cargarFeed() {
+    setCargandoFeed(true);
     try {
-      const data = await api.get('/api/cliente/perfil');
-      setPerfil(data);
+      const data = await api.get('/api/productos');
+      setProductosFeed(data);
     } catch (err) {
-      setError(err.message || 'No se pudo cargar tu perfil.');
+      setError(err.message || 'No se pudieron cargar los productos.');
+    } finally {
+      setCargandoFeed(false);
     }
   }
+
+  async function cargarNegocios() {
+    setCargandoNegocios(true);
+    try {
+      const data = await api.get('/api/negocios');
+      setNegocios(data);
+    } catch (err) {
+      setError(err.message || 'No se pudieron cargar los negocios.');
+    } finally {
+      setCargandoNegocios(false);
+    }
+  }
+
+  async function cargarFavoritoIds() {
+    try {
+      const data = await api.get('/api/cliente/favoritos');
+      setFavoritoIds(new Set(data.map((p) => p.id_producto)));
+    } catch {
+      // silencioso: no bloquea el resto del inicio si esto falla
+    }
+  }
+
+  async function toggleFavorito(e, idProducto) {
+    e.stopPropagation();
+    const esFavorito = favoritoIds.has(idProducto);
+    setFavoritoIds((prev) => {
+      const next = new Set(prev);
+      esFavorito ? next.delete(idProducto) : next.add(idProducto);
+      return next;
+    });
+    try {
+      if (esFavorito) {
+        await api.del(`/api/cliente/favoritos/${idProducto}`);
+      } else {
+        await api.post('/api/cliente/favoritos', { id_producto: idProducto });
+      }
+    } catch (err) {
+      // revertir si falló
+      setFavoritoIds((prev) => {
+        const next = new Set(prev);
+        esFavorito ? next.add(idProducto) : next.delete(idProducto);
+        return next;
+      });
+      setError(err.message || 'No se pudo actualizar favoritos.');
+    }
+  }
+
+  async function buscar(texto) {
+    setBuscando(true);
+    try {
+      const data = await api.get(`/api/buscar?q=${encodeURIComponent(texto)}`);
+      setResultados(data);
+    } catch (err) {
+      setError(err.message || 'No se pudo completar la búsqueda.');
+    } finally {
+      setBuscando(false);
+    }
+  }
+
+  async function verSucursalesDeNegocio(idNegocio, nombreNegocio) {
+    setError('');
+    setNegocioSeleccionado({ id: idNegocio, nombre: nombreNegocio });
+    setSucursalActiva(null);
+    setCargandoSucursales(true);
+    try {
+      const data = await api.get(`/api/negocio/${idNegocio}/sucursales`);
+      setSucursales(data.sucursales || []);
+    } catch (err) {
+      setError(err.message || 'No se pudieron cargar las sucursales de este negocio.');
+      setSucursales([]);
+    } finally {
+      setCargandoSucursales(false);
+    }
+  }
+
+  function seleccionarProductoDelFeed(producto) {
+    setSucursalActiva({ id: producto.id_sucursal, nombre: producto.sucursal_nombre });
+  }
+
+  function limpiarBusqueda() {
+    setQuery('');
+    setResultados(null);
+  }
+
+  const hayResultados = resultados && (resultados.productos.length > 0 || resultados.negocios.length > 0);
 
   return (
     <AppShell roleLabel="Cliente" navItems={CLIENTE_NAV_ITEMS}>
@@ -33,31 +163,232 @@ export default function ClientePanel() {
           <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
         )}
 
-        <section className="bg-white rounded-2xl shadow-lg p-6">
-          <h4 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-            <User size={18} className="text-indigo-600" />
-            Mis Datos
-          </h4>
-          {perfil ? (
-            <div className="text-sm text-slate-600 space-y-1">
-              <p>
-                <span className="font-medium text-slate-800">Nombre:</span>{' '}
-                {perfil.nombre} {perfil.apellido}
-              </p>
-              <p>
-                <span className="font-medium text-slate-800">Celular:</span> {perfil.telefono}
-              </p>
-              <p>
-                <span className="font-medium text-slate-800">Correo:</span> {perfil.correo}
-              </p>
-              <p>
-                <span className="font-medium text-slate-800">Dirección:</span> {perfil.direccion}
-              </p>
+        {/* Buscador */}
+        <div className="relative">
+          <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar productos o negocios..."
+            className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-10 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+          />
+          {query && (
+            <button
+              onClick={limpiarBusqueda}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X size={18} />
+            </button>
+          )}
+
+          {query && (
+            <div className="absolute z-10 mt-2 w-full bg-white rounded-xl shadow-lg border border-slate-200 max-h-96 overflow-y-auto">
+              {buscando ? (
+                <p className="text-sm text-slate-400 p-4">Buscando...</p>
+              ) : !hayResultados ? (
+                <p className="text-sm text-slate-400 p-4">No encontramos nada con "{query}".</p>
+              ) : (
+                <div className="p-2">
+                  {resultados.negocios.length > 0 && (
+                    <div className="mb-2">
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide px-2 py-1">
+                        Negocios
+                      </p>
+                      {resultados.negocios.map((n) => (
+                        <button
+                          key={n.id_negocio}
+                          onClick={() => {
+                            verSucursalesDeNegocio(n.id_negocio, n.nombre_negocio);
+                            limpiarBusqueda();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2"
+                        >
+                          <Building2 size={16} className="text-indigo-600 shrink-0" />
+                          <span className="text-sm text-slate-700">{n.nombre_negocio}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {resultados.productos.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide px-2 py-1">
+                        Productos
+                      </p>
+                      {resultados.productos.map((p) => (
+                        <button
+                          key={p.id_producto}
+                          onClick={() => {
+                            seleccionarProductoDelFeed(p);
+                            limpiarBusqueda();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between gap-2"
+                        >
+                          <span className="text-sm text-slate-700 truncate">
+                            {p.nombre_producto}{' '}
+                            <span className="text-slate-400">· {p.nombre_negocio}</span>
+                          </span>
+                          <span className="text-xs font-medium text-slate-600 shrink-0">
+                            Bs. {p.precio}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+          )}
+        </div>
+
+        {/* Para Ti */}
+        <section className="bg-white rounded-2xl shadow-lg p-6">
+          <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+            <Sparkles size={18} className="text-indigo-600" />
+            Para Ti
+          </h5>
+
+          {cargandoFeed ? (
+            <p className="text-sm text-slate-400">Cargando productos...</p>
+          ) : productosFeed.length === 0 ? (
+            <p className="text-sm text-slate-400">Todavía no hay productos disponibles.</p>
           ) : (
-            <p className="text-sm text-slate-400">Cargando...</p>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+              {productosFeed.map((p) => (
+                <button
+                  key={p.id_producto}
+                  onClick={() => seleccionarProductoDelFeed(p)}
+                  className="shrink-0 w-44 text-left rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition overflow-hidden bg-white relative"
+                >
+                  <div className="relative">
+                    <img
+                      src={imagenProducto(p.id_producto)}
+                      alt={p.nombre_producto}
+                      className="w-full h-24 object-cover"
+                      loading="lazy"
+                    />
+                    <span
+                      role="button"
+                      onClick={(e) => toggleFavorito(e, p.id_producto)}
+                      aria-label="Marcar como favorito"
+                      className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white transition"
+                    >
+                      <Heart
+                        size={14}
+                        className={favoritoIds.has(p.id_producto) ? 'text-red-500' : 'text-slate-400'}
+                        fill={favoritoIds.has(p.id_producto) ? 'currentColor' : 'none'}
+                      />
+                    </span>
+                  </div>
+                  <div className="p-3">
+                    <p className="font-medium text-slate-800 text-sm truncate">{p.nombre_producto}</p>
+                    <p className="text-xs text-slate-400 truncate">{p.nombre_negocio}</p>
+                    <p className="text-sm font-semibold text-indigo-600 mt-1">Bs. {p.precio}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
         </section>
+
+        {/* Locales */}
+        <section className="bg-white rounded-2xl shadow-lg p-6">
+          <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+            <Building2 size={18} className="text-indigo-600" />
+            Locales
+          </h5>
+
+          {cargandoNegocios ? (
+            <p className="text-sm text-slate-400">Cargando negocios...</p>
+          ) : negocios.length === 0 ? (
+            <p className="text-sm text-slate-400">No hay negocios disponibles.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {negocios.map((n) => {
+                const sinSucursales = n.cantidad_sucursales === 0;
+                const activo = negocioSeleccionado?.id === n.id_negocio;
+                return (
+                  <button
+                    key={n.id_negocio}
+                    onClick={() => !sinSucursales && verSucursalesDeNegocio(n.id_negocio, n.nombre_negocio)}
+                    disabled={sinSucursales}
+                    className={`text-left rounded-xl border overflow-hidden transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      activo ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-slate-200 hover:border-indigo-300 hover:shadow-md'
+                    }`}
+                  >
+                    <img
+                      src={imagenNegocio(n.id_negocio)}
+                      alt={n.nombre_negocio}
+                      className="w-full h-32 object-cover"
+                      loading="lazy"
+                    />
+                    <div className="p-4">
+                      <p className="font-semibold text-slate-800">{n.nombre_negocio}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {sinSucursales
+                          ? 'Sin sucursales todavía'
+                          : `${n.cantidad_sucursales} sucursal${n.cantidad_sucursales === 1 ? '' : 'es'}`}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Sucursales del negocio seleccionado */}
+        {negocioSeleccionado && (
+          <section className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <Store size={18} className="text-indigo-600" />
+                Sucursales de {negocioSeleccionado.nombre}
+              </h5>
+              <button
+                onClick={() => {
+                  setNegocioSeleccionado(null);
+                  setSucursales([]);
+                }}
+                className="text-sm text-slate-500 hover:text-indigo-600 transition"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            {cargandoSucursales ? (
+              <p className="text-sm text-slate-400">Cargando sucursales...</p>
+            ) : sucursales.length === 0 ? (
+              <p className="text-sm text-slate-400">Este negocio no tiene sucursales disponibles.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {sucursales.map((s) => (
+                  <button
+                    key={s.id_sucursal}
+                    onClick={() => setSucursalActiva({ id: s.id_sucursal, nombre: s.nombre_sucursal })}
+                    className={`text-sm rounded-lg px-3 py-1.5 border transition ${
+                      sucursalActiva?.id === s.id_sucursal
+                        ? 'bg-indigo-600 border-indigo-600 text-white'
+                        : 'border-indigo-600 text-indigo-600 hover:bg-indigo-50'
+                    }`}
+                  >
+                    {s.nombre_sucursal} ({s.direccion})
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Selector de productos + carrito */}
+        {sucursalActiva && (
+          <SelectorProductos
+            sucursalId={sucursalActiva.id}
+            sucursalNombre={sucursalActiva.nombre}
+            onCerrar={() => setSucursalActiva(null)}
+          />
+        )}
       </div>
     </AppShell>
   );

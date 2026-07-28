@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Package } from 'lucide-react';
+import { Menu, X, LogOut, Package, MapPin } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
 function iniciales(nombre) {
@@ -40,6 +40,7 @@ export default function AppShell({ roleLabel, navItems, children }) {
           <NavLink
             key={to}
             to={to}
+            end
             onClick={() => setAbierto(false)}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
@@ -67,6 +68,12 @@ export default function AppShell({ roleLabel, navItems, children }) {
             <p className="truncate text-xs text-slate-400">{usuario?.correo}</p>
           </div>
         </div>
+        {usuario?.direccion && (
+          <div className="flex items-start gap-2 mb-3 text-xs text-slate-400">
+            <MapPin size={13} className="mt-0.5 shrink-0" />
+            <span className="truncate">{usuario.direccion}</span>
+          </div>
+        )}
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
@@ -81,13 +88,13 @@ export default function AppShell({ roleLabel, navItems, children }) {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Sidebar - desktop */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-64 lg:flex-col bg-slate-900">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-64 lg:flex-col bg-slate-900 print:hidden">
         {sidebarContent}
       </aside>
 
       {/* Sidebar - mobile drawer */}
       {abierto && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden print:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setAbierto(false)} />
           <aside className="fixed inset-y-0 left-0 w-64 bg-slate-900 shadow-xl">
             <button
@@ -103,7 +110,7 @@ export default function AppShell({ roleLabel, navItems, children }) {
       )}
 
       {/* Top bar - mobile only */}
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden print:hidden">
         <button
           onClick={() => setAbierto(true)}
           aria-label="Abrir menú"
@@ -115,8 +122,8 @@ export default function AppShell({ roleLabel, navItems, children }) {
       </header>
 
       {/* Content */}
-      <main className="lg:pl-64">
-        <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">{children}</div>
+      <main className="lg:pl-64 print:pl-0">
+        <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 print:p-0 print:max-w-none">{children}</div>
       </main>
     </div>
   );
