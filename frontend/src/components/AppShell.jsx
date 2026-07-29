@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, Package, MapPin } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import CarritoFlotante from './CarritoFlotante';
 
 function iniciales(nombre) {
   if (!nombre) return '?';
@@ -125,6 +126,8 @@ export default function AppShell({ roleLabel, navItems, children }) {
       <main className="lg:pl-64 print:pl-0">
         <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 print:p-0 print:max-w-none">{children}</div>
       </main>
+
+      <CarritoFlotante />
     </div>
   );
 }

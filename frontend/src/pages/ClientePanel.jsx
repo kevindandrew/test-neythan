@@ -43,8 +43,9 @@ export default function ClientePanel() {
   useEffect(() => {
     const idSucursal = searchParams.get('sucursal');
     const nombreSucursal = searchParams.get('nombre');
+    const nombreNegocio = searchParams.get('negocio');
     if (idSucursal && nombreSucursal) {
-      setSucursalActiva({ id: Number(idSucursal), nombre: nombreSucursal });
+      setSucursalActiva({ id: Number(idSucursal), nombre: nombreSucursal, nombreNegocio: nombreNegocio || undefined });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -146,7 +147,13 @@ export default function ClientePanel() {
   }
 
   function seleccionarProductoDelFeed(producto) {
-    setSucursalActiva({ id: producto.id_sucursal, nombre: producto.sucursal_nombre });
+    setNegocioSeleccionado(null);
+    setSucursales([]);
+    setSucursalActiva({
+      id: producto.id_sucursal,
+      nombre: producto.sucursal_nombre,
+      nombreNegocio: producto.nombre_negocio,
+    });
   }
 
   function limpiarBusqueda() {
@@ -250,41 +257,57 @@ export default function ClientePanel() {
           </h5>
 
           {cargandoFeed ? (
-            <p className="text-sm text-slate-400">Cargando productos...</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-2xl border border-slate-100 overflow-hidden animate-pulse">
+                  <div className="w-full h-36 bg-slate-100" />
+                  <div className="p-3.5 space-y-2">
+                    <div className="h-3.5 bg-slate-100 rounded w-3/4" />
+                    <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : productosFeed.length === 0 ? (
             <p className="text-sm text-slate-400">Todavía no hay productos disponibles.</p>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {productosFeed.map((p) => (
                 <button
                   key={p.id_producto}
                   onClick={() => seleccionarProductoDelFeed(p)}
-                  className="shrink-0 w-44 text-left rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition overflow-hidden bg-white relative"
+                  className="group text-left rounded-2xl border border-slate-200 bg-white overflow-hidden transition hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <div className="relative">
                     <img
                       src={imagenProducto(p.id_producto)}
                       alt={p.nombre_producto}
-                      className="w-full h-24 object-cover"
+                      className="w-full h-36 object-cover transition duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-black/40 to-transparent" />
                     <span
                       role="button"
                       onClick={(e) => toggleFavorito(e, p.id_producto)}
                       aria-label="Marcar como favorito"
-                      className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white transition"
+                      className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm hover:bg-white hover:scale-105 transition"
                     >
                       <Heart
-                        size={14}
+                        size={15}
                         className={favoritoIds.has(p.id_producto) ? 'text-red-500' : 'text-slate-400'}
                         fill={favoritoIds.has(p.id_producto) ? 'currentColor' : 'none'}
                       />
                     </span>
+                    <span className="absolute bottom-2 left-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-indigo-600 shadow-sm">
+                      Bs. {p.precio}
+                    </span>
                   </div>
-                  <div className="p-3">
-                    <p className="font-medium text-slate-800 text-sm truncate">{p.nombre_producto}</p>
-                    <p className="text-xs text-slate-400 truncate">{p.nombre_negocio}</p>
-                    <p className="text-sm font-semibold text-indigo-600 mt-1">Bs. {p.precio}</p>
+                  <div className="p-3.5">
+                    <p className="font-semibold text-slate-800 text-sm truncate">{p.nombre_producto}</p>
+                    <p className="flex items-center gap-1 text-xs text-slate-400 mt-1 truncate">
+                      <Store size={12} className="shrink-0" />
+                      <span className="truncate">{p.nombre_negocio}</span>
+                    </p>
                   </div>
                 </button>
               ))}
@@ -366,7 +389,13 @@ export default function ClientePanel() {
                 {sucursales.map((s) => (
                   <button
                     key={s.id_sucursal}
-                    onClick={() => setSucursalActiva({ id: s.id_sucursal, nombre: s.nombre_sucursal })}
+                    onClick={() =>
+                      setSucursalActiva({
+                        id: s.id_sucursal,
+                        nombre: s.nombre_sucursal,
+                        nombreNegocio: negocioSeleccionado.nombre,
+                      })
+                    }
                     className={`text-sm rounded-lg px-3 py-1.5 border transition ${
                       sucursalActiva?.id === s.id_sucursal
                         ? 'bg-indigo-600 border-indigo-600 text-white'
@@ -386,6 +415,7 @@ export default function ClientePanel() {
           <SelectorProductos
             sucursalId={sucursalActiva.id}
             sucursalNombre={sucursalActiva.nombre}
+            nombreNegocio={sucursalActiva.nombreNegocio}
             onCerrar={() => setSucursalActiva(null)}
           />
         )}
