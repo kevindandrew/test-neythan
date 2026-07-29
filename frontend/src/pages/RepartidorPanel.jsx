@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import EstadoBadge from '../components/EstadoBadge';
 import AppShell from '../components/AppShell';
 import PedidoMapa from '../components/PedidoMapa';
@@ -10,10 +11,14 @@ import {
   Wallet,
   UserRound,
   Phone,
+  Mail,
   MapPin,
   ShoppingBag,
   KeyRound,
   CheckCircle2,
+  Store,
+  BadgeCheck,
+  Calendar,
 } from 'lucide-react';
 
 export const REPARTIDOR_NAV_ITEMS = [
@@ -24,10 +29,12 @@ export const REPARTIDOR_NAV_ITEMS = [
 ];
 
 export default function RepartidorPanel() {
+  const { usuario } = useAuth();
   const [pedidoActual, setPedidoActual] = useState(undefined);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
+  const [infoRepartidor, setInfoRepartidor] = useState(null);
   const [estadoActual, setEstadoActual] = useState('disponible');
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [errorEstado, setErrorEstado] = useState('');
@@ -51,6 +58,7 @@ export default function RepartidorPanel() {
       if (!data.pedido) {
         const datosRepartidor = await api.get('/api/repartidor/pedidos');
         setEstadoActual(datosRepartidor.estado_repartidor);
+        setInfoRepartidor(datosRepartidor.repartidor);
       }
     } catch (err) {
       setError(err.message || 'No se pudo cargar tu panel.');
@@ -110,11 +118,21 @@ export default function RepartidorPanel() {
         )}
 
         {pedidoActual ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PedidoMapa
-              direccion={pedidoActual.cliente_direccion}
-              etiqueta={`Pedido #${pedidoActual.id_pedido}`}
-            />
+          <div className="space-y-4">
+            <h1 className="text-xl font-semibold text-slate-800 tracking-tight">
+              Pedido en Curso
+            </h1>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PedidoMapa
+                origen={{
+                  direccion: pedidoActual.sucursal_direccion,
+                  etiqueta: pedidoActual.sucursal_nombre,
+                }}
+                destino={{
+                  direccion: pedidoActual.cliente_direccion,
+                  etiqueta: pedidoActual.cliente_nombre,
+                }}
+              />
 
             <div className="space-y-4">
               <section className="bg-white rounded-2xl shadow-lg p-6">
@@ -207,42 +225,77 @@ export default function RepartidorPanel() {
                 )}
               </section>
             </div>
+            </div>
           </div>
         ) : (
-          <section className="bg-white rounded-2xl shadow-lg p-6 max-w-md">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-              <Bike size={20} className="text-indigo-600" strokeWidth={2} />
-              Mi Estado Actual
-            </h2>
-            <EstadoBadge estado={estadoActual} />
-
-            {errorEstado && (
-              <div className="mt-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
-                {errorEstado}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <section className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+                <UserRound size={20} className="text-indigo-600" strokeWidth={2} />
+                Mi Información
+              </h2>
+              <div className="space-y-2.5 text-sm text-slate-600">
+                <p className="flex items-center gap-2">
+                  <UserRound size={14} className="text-slate-400" />
+                  {usuario?.nombre || 'Repartidor'}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Mail size={14} className="text-slate-400" />
+                  {usuario?.correo}
+                </p>
+                <p className="flex items-center gap-2">
+                  <BadgeCheck size={14} className="text-slate-400" />
+                  Licencia: {infoRepartidor?.nro_licencia || 'No registrada'}
+                </p>
+                {infoRepartidor?.fecha_registro && (
+                  <p className="flex items-center gap-2">
+                    <Calendar size={14} className="text-slate-400" />
+                    Repartidor desde{' '}
+                    {new Date(infoRepartidor.fecha_registro).toLocaleDateString('es-BO', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </p>
+                )}
               </div>
-            )}
+            </section>
 
-            <button
-              onClick={alternarEstado}
-              disabled={cambiandoEstado}
-              className={`mt-4 w-full sm:w-auto text-sm font-medium rounded-lg px-4 py-2 transition text-white disabled:opacity-60 ${
-                estadoActual === 'disponible'
-                  ? 'bg-amber-500 hover:bg-amber-600'
-                  : 'bg-emerald-600 hover:bg-emerald-700'
-              }`}
-            >
-              {cambiandoEstado
-                ? 'Actualizando...'
-                : estadoActual === 'disponible'
-                ? 'Marcar como Ocupado'
-                : 'Marcar como Disponible'}
-            </button>
+            <section className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+                <Bike size={20} className="text-indigo-600" strokeWidth={2} />
+                Mi Estado Actual
+              </h2>
+              <EstadoBadge estado={estadoActual} />
 
-            <p className="text-sm text-slate-500 mt-4">
-              No tenés ningún pedido en curso. Andá a <strong>Entregar Pedido</strong> para aceptar uno
-              disponible.
-            </p>
-          </section>
+              {errorEstado && (
+                <div className="mt-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                  {errorEstado}
+                </div>
+              )}
+
+              <button
+                onClick={alternarEstado}
+                disabled={cambiandoEstado}
+                className={`mt-4 w-full sm:w-auto text-sm font-medium rounded-lg px-4 py-2 transition text-white disabled:opacity-60 ${
+                  estadoActual === 'disponible'
+                    ? 'bg-amber-500 hover:bg-amber-600'
+                    : 'bg-emerald-600 hover:bg-emerald-700'
+                }`}
+              >
+                {cambiandoEstado
+                  ? 'Actualizando...'
+                  : estadoActual === 'disponible'
+                  ? 'Marcar como Ocupado'
+                  : 'Marcar como Disponible'}
+              </button>
+
+              <p className="text-sm text-slate-500 mt-4">
+                No tenés ningún pedido en curso. Andá a <strong>Entregar Pedido</strong> para aceptar
+                uno disponible.
+              </p>
+            </section>
+          </div>
         )}
       </div>
     </AppShell>

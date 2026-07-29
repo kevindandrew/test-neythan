@@ -875,6 +875,19 @@ def pedidos_disponibles_repartidor():
         """
     )
     pedidos = cursor.fetchall()
+
+    for p in pedidos:
+        cursor.execute(
+            """
+            SELECT dp.cantidad, pr.nombre, pr.precio_unitario
+            FROM detalle_pedido dp
+            JOIN producto pr ON dp.id_producto = pr.id_producto
+            WHERE dp.id_pedido = %s
+            """,
+            (p["id_pedido"],),
+        )
+        p["productos"] = cursor.fetchall()
+
     cursor.close()
     return jsonify(pedidos), 200
 
@@ -909,10 +922,22 @@ def aceptar_pedido_repartidor(id_pedido):
 
     token = f"{random.randint(0, 99999):05d}"
 
-    cursor.execute(
-        "UPDATE pedido SET ci_repartidor = %s, estado_pedido = 'En Camino', token = %s WHERE id_pedido = %s",
-        (ci_repartidor, token, id_pedido),
-    )
+    # El UPDATE puede ser rechazado por trg_repartidor_un_pedido_activo (ver
+    # chaski_db.sql) si, por una condición de carrera, el repartidor ya tomó
+    # otro pedido entre el chequeo de arriba y este UPDATE.
+    try:
+        cursor.execute(
+            "UPDATE pedido SET ci_repartidor = %s, estado_pedido = 'En Camino', token = %s WHERE id_pedido = %s",
+            (ci_repartidor, token, id_pedido),
+        )
+    except Exception as e:
+        mysql.connection.rollback()
+        cursor.close()
+        return (
+            jsonify({"error": "Ya tenés un pedido en curso, no podés aceptar otro."}),
+            400,
+        )
+
     cursor.execute(
         "UPDATE repartidor SET estado_disponible = 'ocupado' WHERE ci_repartidor = %s",
         (ci_repartidor,),
@@ -936,11 +961,16 @@ def pedido_actual_repartidor():
         """
         SELECT p.id_pedido, p.fecha, p.estado_pedido, p.total,
                pe.nombre AS cliente_nombre, pe.telefono AS cliente_telefono,
-               pe.direccion AS cliente_direccion
+               pe.direccion AS cliente_direccion,
+               s.nombre AS sucursal_nombre, s.direccion AS sucursal_direccion
         FROM pedido p
         JOIN cliente c ON p.ci_cliente = c.ci_cliente
         JOIN persona pe ON c.ci_cliente = pe.ci
+        JOIN detalle_pedido dp ON p.id_pedido = dp.id_pedido
+        JOIN sucursal s ON dp.id_sucursal = s.id_sucursal
         WHERE p.ci_repartidor = %s AND p.estado_pedido = 'En Camino'
+        GROUP BY p.id_pedido, p.fecha, p.estado_pedido, p.total, pe.nombre,
+                 pe.telefono, pe.direccion, s.nombre, s.direccion
         ORDER BY p.id_pedido DESC
         LIMIT 1
         """,

@@ -122,6 +122,29 @@ CREATE TABLE pedido (
     FOREIGN KEY (id_tarifa) REFERENCES tarifa(id_tarifa)
 );
 
+-- Un repartidor no puede tener dos pedidos "En Camino" a la vez: si el backend
+-- intenta asignarle un segundo pedido mientras ya tiene uno activo, este
+-- trigger aborta el UPDATE con un error que la API traduce a un mensaje claro.
+DELIMITER $$
+CREATE TRIGGER trg_repartidor_un_pedido_activo
+BEFORE UPDATE ON pedido
+FOR EACH ROW
+BEGIN
+  DECLARE pedidos_activos INT;
+  IF NEW.ci_repartidor IS NOT NULL AND OLD.ci_repartidor IS NULL THEN
+    SELECT COUNT(*) INTO pedidos_activos
+    FROM pedido
+    WHERE ci_repartidor = NEW.ci_repartidor
+      AND estado_pedido = 'En Camino'
+      AND id_pedido <> NEW.id_pedido;
+    IF pedidos_activos > 0 THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Este repartidor ya tiene un pedido en curso; no puede aceptar otro.';
+    END IF;
+  END IF;
+END$$
+DELIMITER ;
+
 CREATE TABLE detalle_pedido (
     id_pedido INT NOT NULL,
     id_producto INT NOT NULL,
