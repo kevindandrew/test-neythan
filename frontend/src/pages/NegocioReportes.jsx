@@ -67,7 +67,7 @@ export default function NegocioReportes() {
           <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
             <button
               onClick={() => setMesSeleccionado(null)}
-              className="flex items-center gap-1.5 text-sm border border-slate-300 rounded-lg px-3 py-1.5 text-slate-600 hover:bg-slate-100 transition"
+              className="flex items-center gap-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             >
               <ArrowLeft size={16} />
               Volver a Reportes
@@ -81,18 +81,18 @@ export default function NegocioReportes() {
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-semibold text-slate-800">
+              <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
                 {usuario?.nombre_negocio || 'Negocio'}
               </h2>
-              <p className="text-sm text-slate-500">Reporte de ventas — {mesActivo.nombre}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Reporte de ventas — {mesActivo.nombre}</p>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                     <th className="py-2 pr-4 font-medium">ID Factura</th>
                     <th className="py-2 pr-4 font-medium">Fecha</th>
                     <th className="py-2 pr-4 font-medium">Sucursal</th>
@@ -103,7 +103,7 @@ export default function NegocioReportes() {
                 </thead>
                 <tbody>
                   {mesActivo.facturas.map((f) => (
-                    <tr key={f.id_factura} className="border-b border-slate-100">
+                    <tr key={f.id_factura} className="border-b border-slate-100 dark:border-slate-800">
                       <td className="py-2 pr-4">{f.id_factura}</td>
                       <td className="py-2 pr-4">
                         {new Date(f.fecha_emision).toLocaleDateString('es-BO')}
@@ -116,7 +116,7 @@ export default function NegocioReportes() {
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="font-semibold text-slate-800">
+                  <tr className="font-semibold text-slate-800 dark:text-slate-100">
                     <td colSpan={5} className="py-3 pr-4 text-right">
                       Total del mes ({mesActivo.cantidad} facturas)
                     </td>
@@ -137,11 +137,11 @@ export default function NegocioReportes() {
     <AppShell roleLabel={usuario?.nombre_negocio || 'Negocio'} navItems={NEGOCIO_NAV_ITEMS}>
       <div className="space-y-6">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
-        <section className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
             <FileText size={20} strokeWidth={2} className="text-red-600" />
             Reportes de Ventas
           </h2>
@@ -154,16 +154,16 @@ export default function NegocioReportes() {
               <Skeleton className="h-14 w-full rounded-xl" />
             </div>
           ) : meses.length === 0 ? (
-            <p className="text-sm text-slate-500">Todavía no hay facturas para generar reportes.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Todavía no hay facturas para generar reportes.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {meses.map((m) => (
-                <div key={m.clave} className="rounded-xl border border-slate-200 p-4">
-                  <p className="flex items-center gap-2 font-semibold text-slate-800 mb-1">
+                <div key={m.clave} className="rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                  <p className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 mb-1">
                     <Calendar size={16} className="text-red-600" />
                     {m.nombre}
                   </p>
-                  <p className="text-sm text-slate-500 mb-1">{m.cantidad} facturas</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{m.cantidad} facturas</p>
                   <p className="text-lg font-semibold text-red-600 mb-3">
                     Bs {m.total.toFixed(2)}
                   </p>

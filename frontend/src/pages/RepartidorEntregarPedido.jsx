@@ -9,29 +9,29 @@ import { REPARTIDOR_NAV_ITEMS } from './RepartidorPanel';
 function ModalDetallePedido({ pedido, aceptando, error, onAceptar, onCerrar }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
+      <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-slate-800">Pedido #{pedido.id_pedido}</h3>
-          <button onClick={onCerrar} aria-label="Cerrar" className="text-slate-400 hover:text-slate-600">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Pedido #{pedido.id_pedido}</h3>
+          <button onClick={onCerrar} aria-label="Cerrar" className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
             <X size={20} />
           </button>
         </div>
 
         {error && (
-          <div className="mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="mb-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
         <div className="overflow-y-auto -mx-1 px-1 space-y-3">
-          <p className="flex items-center gap-2 text-sm text-slate-600">
-            <Store size={14} className="text-slate-400" />
+          <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <Store size={14} className="text-slate-400 dark:text-slate-500" />
             {pedido.nombre_negocio} · {pedido.sucursal_nombre}
           </p>
-          <p className="flex items-center gap-2 text-sm text-slate-600">
-            <MapPin size={14} className="text-slate-400" />
+          <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <MapPin size={14} className="text-slate-400 dark:text-slate-500" />
             {pedido.cliente_direccion || 'No registrada'}
           </p>
-          <p className="flex items-center gap-2 text-sm text-slate-600">
-            <Calendar size={14} className="text-slate-400" />
+          <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <Calendar size={14} className="text-slate-400 dark:text-slate-500" />
             {new Date(pedido.fecha).toLocaleString('es-BO', {
               day: '2-digit',
               month: 'short',
@@ -40,14 +40,14 @@ function ModalDetallePedido({ pedido, aceptando, error, onAceptar, onCerrar }) {
             })}
           </p>
 
-          <div className="border-t border-slate-200 pt-3">
-            <p className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-              <ShoppingBag size={14} className="text-slate-400" />
+          <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+            <p className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
+              <ShoppingBag size={14} className="text-slate-400 dark:text-slate-500" />
               Productos
             </p>
             <div className="space-y-1">
               {(pedido.productos || []).map((prod, idx) => (
-                <div key={idx} className="flex justify-between text-sm text-slate-600">
+                <div key={idx} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                   <span>
                     {prod.nombre} × {prod.cantidad}
                   </span>
@@ -55,8 +55,8 @@ function ModalDetallePedido({ pedido, aceptando, error, onAceptar, onCerrar }) {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-              <span className="text-sm font-medium text-slate-700">Total</span>
+            <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Total</span>
               <span className="text-lg font-semibold text-red-600">
                 Bs. {parseFloat(pedido.total).toFixed(2)}
               </span>
@@ -131,11 +131,11 @@ export default function RepartidorEntregarPedido() {
     <AppShell roleLabel="Repartidor" navItems={REPARTIDOR_NAV_ITEMS}>
       <div className="space-y-6">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
-        <section className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
             <PackageSearch size={20} className="text-red-600" strokeWidth={2} />
             Pedidos Disponibles
           </h2>
@@ -143,7 +143,7 @@ export default function RepartidorEntregarPedido() {
           {cargando ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-slate-200 p-4 space-y-2">
+                <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-2">
                   <Skeleton className="h-4 w-1/2" />
                   <Skeleton className="h-3 w-3/4" />
                   <Skeleton className="h-3 w-2/3" />
@@ -151,7 +151,7 @@ export default function RepartidorEntregarPedido() {
               ))}
             </div>
           ) : pedidos.length === 0 ? (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-400 dark:text-slate-500">
               No hay pedidos disponibles para aceptar en este momento.
             </p>
           ) : (
@@ -160,20 +160,20 @@ export default function RepartidorEntregarPedido() {
                 <button
                   key={p.id_pedido}
                   onClick={() => abrirDetalle(p)}
-                  className="text-left rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition p-4"
+                  className="text-left rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-300 hover:shadow-md transition p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-slate-800">Pedido #{p.id_pedido}</h3>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">Pedido #{p.id_pedido}</h3>
                     <span className="text-sm font-semibold text-red-600">
                       Bs. {parseFloat(p.total).toFixed(2)}
                     </span>
                   </div>
-                  <p className="flex items-center gap-2 text-sm text-slate-600 mb-1">
-                    <Store size={14} className="text-slate-400" />
+                  <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mb-1">
+                    <Store size={14} className="text-slate-400 dark:text-slate-500" />
                     {p.nombre_negocio} · {p.sucursal_nombre}
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-slate-600">
-                    <MapPin size={14} className="text-slate-400" />
+                  <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <MapPin size={14} className="text-slate-400 dark:text-slate-500" />
                     {p.cliente_direccion || 'No registrada'}
                   </p>
                 </button>

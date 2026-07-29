@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './theme/ThemeContext';
 import { AuthProvider } from './auth/AuthContext';
 import { CartProvider } from './cart/CartContext';
 import RequireRole from './components/RequireRole';
@@ -24,9 +25,10 @@ import Factura from './pages/Factura';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
 
@@ -174,6 +176,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </CartProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

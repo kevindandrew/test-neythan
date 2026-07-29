@@ -122,7 +122,7 @@ export default function PedidoMapa({ direccion, etiqueta, origen, destino, perfi
   const lineaRuta = ruta?.geometria || puntos;
 
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-200 h-full min-h-70 flex flex-col">
+    <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 h-full min-h-70 flex flex-col">
       <div className="flex-1 min-h-0">
         <MapContainer
           center={centroInicial}
@@ -162,7 +162,7 @@ export default function PedidoMapa({ direccion, etiqueta, origen, destino, perfi
       </div>
 
       {tieneDosPuntos && ruta && (
-        <div className="flex items-center justify-center gap-4 border-t border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-600">
+        <div className="flex items-center justify-center gap-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300">
           <span>📍 {formatearDistancia(ruta.distanciaMetros)}</span>
           <span>⏱ {formatearDuracion(ruta.duracionSegundos)}</span>
         </div>

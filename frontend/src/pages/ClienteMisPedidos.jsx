@@ -21,13 +21,13 @@ function TarjetaPedido({ pedido, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-xl border border-slate-200 bg-slate-50 hover:border-red-300 hover:shadow-md transition p-4"
+      className="w-full text-left rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 hover:border-red-300 hover:shadow-md transition p-4"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h6 className="font-medium text-slate-800">Pedido #{pedido.id_pedido}</h6>
+        <h6 className="font-medium text-slate-800 dark:text-slate-100">Pedido #{pedido.id_pedido}</h6>
         <EstadoBadge estado={pedido.estado} />
       </div>
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-slate-600 dark:text-slate-300">
         Total: <span className="font-semibold">Bs. {pedido.total}</span>
       </p>
       {pedido.estado === 'En Camino' && pedido.token && (
@@ -67,16 +67,16 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
+      <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-slate-800">Pedido #{idPedido}</h3>
-          <button onClick={onCerrar} aria-label="Cerrar" className="text-slate-400 hover:text-slate-600">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Pedido #{idPedido}</h3>
+          <button onClick={onCerrar} aria-label="Cerrar" className="text-slate-400 dark:text-slate-500 hover:text-slate-600">
             <X size={20} />
           </button>
         </div>
 
         {error && (
-          <div className="mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="mb-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
         {cargando ? (
@@ -95,9 +95,9 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
               </span>
             </div>
 
-            <div className="space-y-1.5 text-sm text-slate-600">
+            <div className="space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
               <p className="flex items-center gap-2">
-                <Calendar size={14} className="text-slate-400" />
+                <Calendar size={14} className="text-slate-400 dark:text-slate-500" />
                 {new Date(detalle.fecha).toLocaleString('es-BO', {
                   day: '2-digit',
                   month: 'short',
@@ -108,22 +108,22 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
               </p>
               {detalle.direccion && (
                 <p className="flex items-center gap-2">
-                  <MapPin size={14} className="text-slate-400" />
+                  <MapPin size={14} className="text-slate-400 dark:text-slate-500" />
                   {detalle.direccion}
                 </p>
               )}
               {detalle.zona && (
                 <p className="flex items-center gap-2">
-                  <Navigation size={14} className="text-slate-400" />
+                  <Navigation size={14} className="text-slate-400 dark:text-slate-500" />
                   Zona {detalle.zona}
                 </p>
               )}
             </div>
 
             {detalle.estado === 'En Camino' && detalle.token && (
-              <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+              <div className="flex items-center gap-2 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-3 py-2">
                 <KeyRound size={16} className="text-red-600 shrink-0" />
-                <p className="text-sm text-red-800">
+                <p className="text-sm text-red-800 dark:text-red-300">
                   Tu código de entrega es{' '}
                   <span className="font-bold tracking-widest">{detalle.token}</span>. Dáselo al
                   repartidor cuando llegue tu pedido.
@@ -131,11 +131,11 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
               </div>
             )}
 
-            <div className="border-t border-slate-200 pt-3">
-              <p className="text-sm font-medium text-slate-700 mb-2">Productos</p>
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Productos</p>
               <div className="space-y-1">
                 {(detalle.productos || []).map((prod, idx) => (
-                  <div key={idx} className="flex justify-between text-sm text-slate-600">
+                  <div key={idx} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                     <span className="truncate">
                       {prod.nombre} × {prod.cantidad}
                     </span>
@@ -195,21 +195,21 @@ export default function ClienteMisPedidos() {
     <AppShell roleLabel="Cliente" navItems={CLIENTE_NAV_ITEMS}>
       <div className="space-y-6">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
         {cargandoPedidos ? (
           <>
-            <section className="bg-white rounded-2xl shadow-lg p-6">
-              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">
                 <Hourglass size={18} className="text-red-600" />
                 En Curso
               </h5>
               <SkeletonCardGrid count={3} className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
             </section>
 
-            <section className="bg-white rounded-2xl shadow-lg p-6">
-              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">
                 <PackageCheck size={18} className="text-red-600" />
                 Recibidos
               </h5>
@@ -217,8 +217,8 @@ export default function ClienteMisPedidos() {
             </section>
           </>
         ) : pedidos.length === 0 ? (
-          <section className="bg-white rounded-2xl shadow-lg p-6 text-center py-8">
-            <p className="text-sm text-slate-400 mb-4">Aún no has realizado ningún pedido.</p>
+          <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 text-center py-8">
+            <p className="text-sm text-slate-400 dark:text-slate-500 mb-4">Aún no has realizado ningún pedido.</p>
             <Link
               to="/cliente/panel"
               className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
@@ -229,13 +229,13 @@ export default function ClienteMisPedidos() {
           </section>
         ) : (
           <>
-            <section className="bg-white rounded-2xl shadow-lg p-6">
-              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">
                 <Hourglass size={18} className="text-red-600" />
                 En Curso
               </h5>
               {pedidosEnCurso.length === 0 ? (
-                <p className="text-sm text-slate-400">No tenés pedidos en curso.</p>
+                <p className="text-sm text-slate-400 dark:text-slate-500">No tenés pedidos en curso.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pedidosEnCurso.map((p) => (
@@ -249,13 +249,13 @@ export default function ClienteMisPedidos() {
               )}
             </section>
 
-            <section className="bg-white rounded-2xl shadow-lg p-6">
-              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">
                 <PackageCheck size={18} className="text-red-600" />
                 Recibidos
               </h5>
               {pedidosRecibidos.length === 0 ? (
-                <p className="text-sm text-slate-400">Todavía no recibiste ningún pedido.</p>
+                <p className="text-sm text-slate-400 dark:text-slate-500">Todavía no recibiste ningún pedido.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pedidosRecibidos.map((p) => (

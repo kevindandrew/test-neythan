@@ -77,10 +77,10 @@ export default function NegocioDashboard() {
   return (
     <AppShell roleLabel={usuario?.nombre_negocio || 'Negocio'} navItems={NEGOCIO_NAV_ITEMS}>
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-slate-800">{usuario?.nombre_negocio}</h1>
+        <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{usuario?.nombre_negocio}</h1>
 
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
         {/* Ganancias totales */}
@@ -121,15 +121,15 @@ export default function NegocioDashboard() {
         </div>
 
         {/* Facturación por día */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
             <BarChart3 size={20} strokeWidth={2} className="text-red-600" />
             Facturación por Día
           </h3>
           {cargando ? (
             <Skeleton className="h-64 w-full rounded-lg" />
           ) : facturasPorDia.length === 0 ? (
-            <p className="text-sm text-slate-500">Todavía no hay facturas para graficar.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Todavía no hay facturas para graficar.</p>
           ) : (
             <SimpleBarChart data={facturasPorDia} valuePrefix="Bs " />
           )}

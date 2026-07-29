@@ -115,17 +115,17 @@ export default function NegocioProductos() {
     <AppShell roleLabel="Negocio" navItems={NEGOCIO_NAV_ITEMS}>
       <div className="space-y-6">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
         {mensaje && (
-          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2">
+          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-sm px-4 py-2">
             {mensaje}
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
               <Package size={20} strokeWidth={2} className="text-red-600" />
               Mis Productos Registrados
             </h3>
@@ -142,7 +142,7 @@ export default function NegocioProductos() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                     <th className="py-2 pr-4 font-medium">ID</th>
                     <th className="py-2 pr-4 font-medium">Nombre</th>
                     <th className="py-2 pr-4 font-medium">Descripción</th>
@@ -158,12 +158,12 @@ export default function NegocioProductos() {
               </table>
             </div>
           ) : productos.length === 0 ? (
-            <p className="text-sm text-slate-500">No hay productos registrados.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No hay productos registrados.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                     <th className="py-2 pr-4 font-medium">ID</th>
                     <th className="py-2 pr-4 font-medium">Nombre</th>
                     <th className="py-2 pr-4 font-medium">Descripción</th>
@@ -175,7 +175,7 @@ export default function NegocioProductos() {
                 </thead>
                 <tbody>
                   {productos.map((p) => (
-                    <tr key={p.id_producto} className="border-b border-slate-100 hover:bg-slate-50">
+                    <tr key={p.id_producto} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700">
                       <td className="py-2 pr-4">{p.id_producto}</td>
                       <td className="py-2 pr-4">{p.nombre}</td>
                       <td className="py-2 pr-4">{p.descripcion || '-'}</td>
@@ -203,22 +203,22 @@ export default function NegocioProductos() {
       {/* Modal de confirmación de eliminación */}
       {productoAEliminar && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-red-50">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 w-full max-w-sm">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40">
               <AlertTriangle size={22} strokeWidth={2} className="text-red-600" />
             </div>
-            <h4 className="text-lg font-semibold text-slate-800 mb-2">Eliminar producto</h4>
-            <p className="text-sm text-slate-600 mb-4">
+            <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">Eliminar producto</h4>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
               ¿Seguro que querés eliminar «{productoAEliminar.nombre}»? Esta acción no se puede deshacer.
             </p>
             {errorEliminar && (
-              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{errorEliminar}</div>
+              <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{errorEliminar}</div>
             )}
             <div className="flex justify-end gap-3">
               <button
                 onClick={cancelarEliminar}
                 disabled={eliminando}
-                className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 px-3 py-2 rounded-lg transition"
               >
                 Cancelar
               </button>
@@ -237,15 +237,15 @@ export default function NegocioProductos() {
       {/* Modal: Agregar Nuevo Producto */}
       {modalProductoAbierto && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
                 <PackagePlus size={20} strokeWidth={2} className="text-red-600" />
                 Agregar Nuevo Producto
               </h3>
               <button
                 onClick={cerrarModalProducto}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600"
                 aria-label="Cerrar"
               >
                 <X size={20} />
@@ -253,14 +253,14 @@ export default function NegocioProductos() {
             </div>
 
             {errorForm && (
-              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+              <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
                 {errorForm}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Nombre del producto
                 </label>
                 <input
@@ -268,46 +268,46 @@ export default function NegocioProductos() {
                   required
                   value={form.nombre}
                   onChange={(e) => updateForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Descripción</label>
                 <input
                   type="text"
                   value={form.descripcion}
                   onChange={(e) => updateForm('descripcion', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Precio (Bs)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Precio (Bs)</label>
                 <input
                   type="number"
                   step="0.01"
                   required
                   value={form.precio_unitario}
                   onChange={(e) => updateForm('precio_unitario', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Stock</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Stock</label>
                 <input
                   type="number"
                   required
                   value={form.stock_producto}
                   onChange={(e) => updateForm('stock_producto', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Sucursal</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Sucursal</label>
                 <select
                   required
                   value={form.id_sucursal}
                   onChange={(e) => updateForm('id_sucursal', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="">Selecciona Sucursal</option>
                   {sucursales.map((s) => (
@@ -322,7 +322,7 @@ export default function NegocioProductos() {
                   type="button"
                   onClick={cerrarModalProducto}
                   disabled={guardando}
-                  className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 px-3 py-2 rounded-lg transition"
                 >
                   Cancelar
                 </button>

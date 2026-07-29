@@ -6,11 +6,11 @@ import { SkeletonTableRows } from '../components/Skeleton';
 import { ADMIN_NAV_ITEMS } from './AdminDashboard';
 
 const ROL_BADGE = {
-  cliente: 'bg-blue-50 text-blue-700',
-  negocio: 'bg-amber-50 text-amber-700',
-  repartidor: 'bg-emerald-50 text-emerald-700',
-  admin: 'bg-red-50 text-red-700',
-  'sin rol': 'bg-slate-100 text-slate-600',
+  cliente: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  negocio: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+  repartidor: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
+  admin: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+  'sin rol': 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
 };
 
 const FORM_INICIAL = {
@@ -120,16 +120,16 @@ export default function AdminPersonas() {
     <AppShell roleLabel="Super Administrador" navItems={ADMIN_NAV_ITEMS}>
       <div className="space-y-6">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2 dark:bg-red-950/40 dark:text-red-300">{error}</div>
         )}
         {mensaje && (
-          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2">
+          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2 dark:bg-emerald-950/40 dark:text-emerald-300">
             {mensaje}
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-6 dark:bg-slate-800">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
             <Users size={20} strokeWidth={2} className="text-red-600" />
             Todas las Personas Registradas
           </h3>
@@ -138,7 +138,7 @@ export default function AdminPersonas() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                     <th className="py-2 pr-4 font-medium">CI</th>
                     <th className="py-2 pr-4 font-medium">Nombre</th>
                     <th className="py-2 pr-4 font-medium">Correo</th>
@@ -154,12 +154,12 @@ export default function AdminPersonas() {
               </table>
             </div>
           ) : personas.length === 0 ? (
-            <p className="text-sm text-slate-500">No hay personas registradas.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No hay personas registradas.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                     <th className="py-2 pr-4 font-medium">CI</th>
                     <th className="py-2 pr-4 font-medium">Nombre</th>
                     <th className="py-2 pr-4 font-medium">Correo</th>
@@ -171,7 +171,7 @@ export default function AdminPersonas() {
                 </thead>
                 <tbody>
                   {personas.map((p) => (
-                    <tr key={p.ci} className="border-b border-slate-100 hover:bg-slate-50">
+                    <tr key={p.ci} className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800">
                       <td className="py-2 pr-4">{p.ci}</td>
                       <td className="py-2 pr-4">
                         {p.nombre} {p.apepaterno}
@@ -192,7 +192,7 @@ export default function AdminPersonas() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => abrirEditar(p)}
-                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg px-3 py-1.5 transition"
+                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 text-xs font-medium rounded-lg px-3 py-1.5 transition"
                           >
                             <Pencil size={14} strokeWidth={2} />
                             Editar
@@ -218,15 +218,15 @@ export default function AdminPersonas() {
       {/* Modal: Editar Persona */}
       {personaEditando && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 dark:bg-slate-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
                 <Pencil size={20} strokeWidth={2} className="text-red-600" />
                 Editar Persona (CI {personaEditando.ci})
               </h3>
               <button
                 onClick={cerrarEditar}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                 aria-label="Cerrar"
               >
                 <X size={20} />
@@ -234,57 +234,57 @@ export default function AdminPersonas() {
             </div>
 
             {errorForm && (
-              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2 dark:bg-red-950/40 dark:text-red-300">
                 {errorForm}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Nombre</label>
                 <input
                   type="text"
                   required
                   value={form.nombre}
                   onChange={(e) => updateForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Apellido</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Apellido</label>
                 <input
                   type="text"
                   value={form.apepaterno}
                   onChange={(e) => updateForm('apepaterno', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Correo</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Correo</label>
                 <input
                   type="email"
                   required
                   value={form.correo}
                   onChange={(e) => updateForm('correo', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Teléfono</label>
                 <input
                   type="text"
                   value={form.telefono}
                   onChange={(e) => updateForm('telefono', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Dirección</label>
                 <input
                   type="text"
                   value={form.direccion}
                   onChange={(e) => updateForm('direccion', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
@@ -292,7 +292,7 @@ export default function AdminPersonas() {
                   type="button"
                   onClick={cerrarEditar}
                   disabled={guardando}
-                  className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                  className="text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-slate-100 px-3 py-2 rounded-lg transition"
                 >
                   Cancelar
                 </button>
@@ -312,17 +312,17 @@ export default function AdminPersonas() {
       {/* Modal de confirmación de eliminación */}
       {personaAEliminar && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-red-50">
+          <div className="bg-white rounded-2xl shadow-lg p-6 dark:bg-slate-800 w-full max-w-sm">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40">
               <AlertTriangle size={22} strokeWidth={2} className="text-red-600" />
             </div>
-            <h4 className="text-lg font-semibold text-slate-800 mb-2">Eliminar persona</h4>
-            <p className="text-sm text-slate-600 mb-4">
+            <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">Eliminar persona</h4>
+            <p className="text-sm text-slate-600 mb-4 dark:text-slate-300">
               ¿Seguro que querés eliminar a «{personaAEliminar.nombre} {personaAEliminar.apepaterno}»?
               Esta acción no se puede deshacer.
             </p>
             {errorEliminar && (
-              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2 dark:bg-red-950/40 dark:text-red-300">
                 {errorEliminar}
               </div>
             )}
@@ -330,7 +330,7 @@ export default function AdminPersonas() {
               <button
                 onClick={cancelarEliminar}
                 disabled={eliminando}
-                className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                className="text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-slate-100 px-3 py-2 rounded-lg transition"
               >
                 Cancelar
               </button>

@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, MapPin } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import CarritoFlotante from './CarritoFlotante';
+import ThemeToggle from './ThemeToggle';
 
 function iniciales(nombre) {
   if (!nombre) return '?';
@@ -75,6 +76,10 @@ export default function AppShell({ roleLabel, navItems, children }) {
             <span className="truncate">{usuario.direccion}</span>
           </div>
         )}
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-xs font-medium text-slate-400">Modo oscuro</span>
+          <ThemeToggle />
+        </div>
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
@@ -87,7 +92,7 @@ export default function AppShell({ roleLabel, navItems, children }) {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Sidebar - desktop */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-64 lg:flex-col bg-slate-900 print:hidden">
         {sidebarContent}
@@ -111,15 +116,18 @@ export default function AppShell({ roleLabel, navItems, children }) {
       )}
 
       {/* Top bar - mobile only */}
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden print:hidden">
+      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 lg:hidden print:hidden">
         <button
           onClick={() => setAbierto(true)}
           aria-label="Abrir menú"
-          className="text-slate-600 hover:text-slate-900"
+          className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
         >
           <Menu size={22} />
         </button>
-        <span className="text-sm font-semibold text-slate-800">Chaski Delivery</span>
+        <span className="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-100">
+          Chaski Delivery
+        </span>
+        <ThemeToggle />
       </header>
 
       {/* Content */}

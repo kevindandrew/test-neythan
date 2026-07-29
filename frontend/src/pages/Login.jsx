@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import ThemeToggle from "../components/ThemeToggle";
 
 const ROL_HOME = {
   cliente: "/cliente/panel",
@@ -35,17 +36,17 @@ const initialRegistro = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#A60321] focus:border-[#A60321] transition";
+  "w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 pl-10 pr-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#A60321] focus:border-[#A60321] transition";
 
 const plainInputClass =
-  "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#A60321] focus:border-[#A60321] transition";
+  "w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#A60321] focus:border-[#A60321] transition";
 
 function Field({ icon: Icon, children }) {
   return (
     <div className="relative">
       <Icon
         size={17}
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
       />
       {children}
     </div>
@@ -117,7 +118,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
       {/* Panel de marca - solo desktop */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[#A60321] text-white flex-col p-12 overflow-hidden">
         <div
@@ -164,31 +165,34 @@ export default function Login() {
       </div>
 
       {/* Formulario */}
-      <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
+      <div className="relative flex flex-1 items-center justify-center p-4 sm:p-6">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-sm">
           <div className="hidden lg:block mb-8">
-            <h1 className="text-2xl font-semibold text-slate-800">
+            <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
               {modo === "login" ? "Bienvenido de nuevo" : "Creá tu cuenta"}
             </h1>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               {modo === "login"
                 ? "Iniciá sesión para continuar"
                 : "Completá tus datos para empezar"}
             </p>
           </div>
-          <p className="text-slate-500 text-sm text-center mb-6 lg:hidden">
+          <p className="text-slate-500 dark:text-slate-400 text-sm text-center mb-6 lg:hidden">
             {modo === "login"
               ? "Iniciá sesión para continuar"
               : "Creá tu cuenta"}
           </p>
 
           {error && (
-            <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2.5">
+            <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2.5">
               {error}
             </div>
           )}
           {mensaje && (
-            <div className="mb-4 rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2.5">
+            <div className="mb-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-sm px-4 py-2.5">
               {mensaje}
             </div>
           )}
@@ -196,7 +200,7 @@ export default function Login() {
           {modo === "login" ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Correo electrónico
                 </label>
                 <Field icon={Mail}>
@@ -212,7 +216,7 @@ export default function Login() {
                 </Field>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Contraseña
                 </label>
                 <Field icon={Lock}>
@@ -233,7 +237,7 @@ export default function Login() {
                         ? "Ocultar contraseña"
                         : "Mostrar contraseña"
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     {verContrasena ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -250,7 +254,7 @@ export default function Login() {
           ) : (
             <form onSubmit={handleRegistro} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Rol
                 </label>
                 <select
@@ -265,7 +269,7 @@ export default function Login() {
               </div>
               {registro.rol === "negocio" && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     Nombre del negocio
                   </label>
                   <Field icon={Store}>
@@ -284,7 +288,7 @@ export default function Login() {
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     CI
                   </label>
                   <input
@@ -296,7 +300,7 @@ export default function Login() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     Teléfono
                   </label>
                   <input
@@ -309,7 +313,7 @@ export default function Login() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     Nombre
                   </label>
                   <input
@@ -321,7 +325,7 @@ export default function Login() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     Apellido
                   </label>
                   <input
@@ -335,7 +339,7 @@ export default function Login() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Correo
                 </label>
                 <Field icon={Mail}>
@@ -349,7 +353,7 @@ export default function Login() {
                 </Field>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Dirección
                 </label>
                 <input
@@ -362,7 +366,7 @@ export default function Login() {
               </div>
               {registro.rol === "cliente" && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                     Zona
                   </label>
                   <Field icon={Navigation}>
@@ -382,7 +386,7 @@ export default function Login() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                   Contraseña
                 </label>
                 <Field icon={Lock}>
@@ -403,7 +407,7 @@ export default function Login() {
                         ? "Ocultar contraseña"
                         : "Mostrar contraseña"
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     {verContrasenaRegistro ? (
                       <EyeOff size={17} />
@@ -423,7 +427,7 @@ export default function Login() {
             </form>
           )}
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
             {modo === "login" ? (
               <>
                 ¿No tenés cuenta?{" "}

@@ -72,18 +72,18 @@ export default function RepartidorVehiculo() {
     <AppShell roleLabel="Repartidor" navItems={REPARTIDOR_NAV_ITEMS}>
       <div className="space-y-6 max-w-xl">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
         {mensaje && (
-          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2">
+          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-sm px-4 py-2">
             {mensaje}
           </div>
         )}
 
-        <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
           <img src={fotoUrl} alt="Vehículo" className="w-full h-48 object-cover" loading="lazy" />
           <div className="p-6">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
               <Bike size={20} className="text-red-600" strokeWidth={2} />
               Mi Vehículo
             </h2>
@@ -99,12 +99,12 @@ export default function RepartidorVehiculo() {
             ) : editando ? (
               <form onSubmit={guardar} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Tipo</label>
                   <select
                     required
                     value={form.tipo}
                     onChange={(e) => updateForm('tipo', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                   >
                     <option value="">Seleccioná un tipo</option>
                     <option value="Motocicleta">Motocicleta</option>
@@ -114,31 +114,31 @@ export default function RepartidorVehiculo() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Placa</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Placa</label>
                   <input
                     type="text"
                     required
                     value={form.placa}
                     onChange={(e) => updateForm('placa', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Modelo</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Modelo</label>
                   <input
                     type="text"
                     value={form.modelo}
                     onChange={(e) => updateForm('modelo', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Color</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Color</label>
                   <input
                     type="text"
                     value={form.color}
                     onChange={(e) => updateForm('color', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </div>
                 <div className="sm:col-span-2 flex justify-end gap-3">
@@ -146,7 +146,7 @@ export default function RepartidorVehiculo() {
                     <button
                       type="button"
                       onClick={() => setEditando(false)}
-                      className="text-sm font-medium text-slate-600 hover:text-slate-800 px-3 py-2 rounded-lg transition"
+                      className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 px-3 py-2 rounded-lg transition"
                     >
                       Cancelar
                     </button>
@@ -163,19 +163,19 @@ export default function RepartidorVehiculo() {
               </form>
             ) : (
               <div>
-                <div className="text-sm text-slate-600 space-y-1 mb-4">
+                <div className="text-sm text-slate-600 dark:text-slate-300 space-y-1 mb-4">
                   <p>
-                    <span className="font-medium text-slate-800">Tipo:</span> {vehiculo.tipo}
+                    <span className="font-medium text-slate-800 dark:text-slate-100">Tipo:</span> {vehiculo.tipo}
                   </p>
                   <p>
-                    <span className="font-medium text-slate-800">Placa:</span> {vehiculo.placa}
+                    <span className="font-medium text-slate-800 dark:text-slate-100">Placa:</span> {vehiculo.placa}
                   </p>
                   <p>
-                    <span className="font-medium text-slate-800">Modelo:</span>{' '}
+                    <span className="font-medium text-slate-800 dark:text-slate-100">Modelo:</span>{' '}
                     {vehiculo.modelo || 'No especificado'}
                   </p>
                   <p>
-                    <span className="font-medium text-slate-800">Color:</span>{' '}
+                    <span className="font-medium text-slate-800 dark:text-slate-100">Color:</span>{' '}
                     {vehiculo.color || 'No especificado'}
                   </p>
                 </div>

@@ -118,12 +118,12 @@ export default function RepartidorPanel() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Skeleton className="h-72 w-full rounded-xl" />
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 space-y-3">
               <Skeleton className="h-5 w-2/3" />
               <Skeleton className="h-4 w-1/2" />
               <Skeleton className="h-4 w-3/4" />
             </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 space-y-3">
               <Skeleton className="h-5 w-1/2" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
@@ -138,12 +138,12 @@ export default function RepartidorPanel() {
     <AppShell roleLabel="Repartidor" navItems={REPARTIDOR_NAV_ITEMS}>
       <div className="space-y-6">
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
 
         {pedidoActual ? (
           <div className="space-y-4">
-            <h1 className="text-xl font-semibold text-slate-800 tracking-tight">
+            <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
               Pedido en Curso
             </h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -164,44 +164,44 @@ export default function RepartidorPanel() {
               />
 
             <div className="space-y-4">
-              <section className="bg-white rounded-2xl shadow-lg p-6">
+              <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-slate-800">
+                  <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                     Pedido #{pedidoActual.id_pedido}
                   </h2>
                   <EstadoBadge estado={pedidoActual.estado_pedido} />
                 </div>
 
-                <div className="space-y-1.5 text-sm text-slate-600 mb-4">
+                <div className="space-y-1.5 text-sm text-slate-600 dark:text-slate-300 mb-4">
                   <p className="flex items-center gap-2">
-                    <UserRound size={14} className="text-slate-400" />
+                    <UserRound size={14} className="text-slate-400 dark:text-slate-500" />
                     {pedidoActual.cliente_nombre}
                   </p>
                   <p className="flex items-center gap-2">
-                    <Phone size={14} className="text-slate-400" />
+                    <Phone size={14} className="text-slate-400 dark:text-slate-500" />
                     {pedidoActual.cliente_telefono || 'No registrado'}
                   </p>
                   <p className="flex items-center gap-2">
-                    <MapPin size={14} className="text-slate-400" />
+                    <MapPin size={14} className="text-slate-400 dark:text-slate-500" />
                     {pedidoActual.cliente_direccion || 'No registrada'}
                   </p>
                 </div>
 
-                <div className="border-t border-slate-200 pt-3">
-                  <p className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <ShoppingBag size={14} className="text-slate-400" />
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                  <p className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
+                    <ShoppingBag size={14} className="text-slate-400 dark:text-slate-500" />
                     Productos
                   </p>
                   <div className="space-y-1">
                     {(pedidoActual.productos || []).map((prod, idx) => (
-                      <div key={idx} className="flex justify-between text-sm text-slate-600">
+                      <div key={idx} className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
                         <span>{prod.nombre} × {prod.cantidad}</span>
                         <span>Bs. {(parseFloat(prod.precio_unitario) * prod.cantidad).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-                    <span className="text-sm font-medium text-slate-700">Total</span>
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Total</span>
                     <span className="text-lg font-semibold text-red-600">
                       Bs. {parseFloat(pedidoActual.total).toFixed(2)}
                     </span>
@@ -209,26 +209,26 @@ export default function RepartidorPanel() {
                 </div>
               </section>
 
-              <section className="bg-white rounded-2xl shadow-lg p-6">
+              <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
                 {entregaConfirmada ? (
                   <div className="text-center py-4">
                     <CheckCircle2 size={32} className="text-emerald-600 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-slate-800">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
                       ¡Entrega confirmada! Factura generada.
                     </p>
                   </div>
                 ) : (
                   <>
-                    <h3 className="flex items-center gap-2 font-semibold text-slate-800 mb-3">
+                    <h3 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 mb-3">
                       <KeyRound size={16} className="text-red-600" />
                       Confirmar entrega
                     </h3>
-                    <p className="text-sm text-slate-500 mb-3">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
                       Pedile al cliente el código de 5 dígitos e ingresalo acá para confirmar la
                       entrega y generar la factura.
                     </p>
                     {errorToken && (
-                      <div className="mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                      <div className="mb-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
                         {errorToken}
                       </div>
                     )}
@@ -240,7 +240,7 @@ export default function RepartidorPanel() {
                         value={tokenInput}
                         onChange={(e) => setTokenInput(e.target.value.replace(/\D/g, ''))}
                         placeholder="00000"
-                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-center text-lg tracking-widest font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-lg tracking-widest font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
                       />
                       <button
                         type="submit"
@@ -258,27 +258,27 @@ export default function RepartidorPanel() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <section className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
                 <UserRound size={20} className="text-red-600" strokeWidth={2} />
                 Mi Información
               </h2>
-              <div className="space-y-2.5 text-sm text-slate-600">
+              <div className="space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
                 <p className="flex items-center gap-2">
-                  <UserRound size={14} className="text-slate-400" />
+                  <UserRound size={14} className="text-slate-400 dark:text-slate-500" />
                   {usuario?.nombre || 'Repartidor'}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Mail size={14} className="text-slate-400" />
+                  <Mail size={14} className="text-slate-400 dark:text-slate-500" />
                   {usuario?.correo}
                 </p>
                 <p className="flex items-center gap-2">
-                  <BadgeCheck size={14} className="text-slate-400" />
+                  <BadgeCheck size={14} className="text-slate-400 dark:text-slate-500" />
                   Licencia: {infoRepartidor?.nro_licencia || 'No registrada'}
                 </p>
                 {infoRepartidor?.fecha_registro && (
                   <p className="flex items-center gap-2">
-                    <Calendar size={14} className="text-slate-400" />
+                    <Calendar size={14} className="text-slate-400 dark:text-slate-500" />
                     Repartidor desde{' '}
                     {new Date(infoRepartidor.fecha_registro).toLocaleDateString('es-BO', {
                       day: '2-digit',
@@ -290,15 +290,15 @@ export default function RepartidorPanel() {
               </div>
             </section>
 
-            <section className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">
                 <Bike size={20} className="text-red-600" strokeWidth={2} />
                 Mi Estado Actual
               </h2>
               <EstadoBadge estado={estadoActual} />
 
               {errorEstado && (
-                <div className="mt-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                <div className="mt-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
                   {errorEstado}
                 </div>
               )}
@@ -319,7 +319,7 @@ export default function RepartidorPanel() {
                   : 'Marcar como Disponible'}
               </button>
 
-              <p className="text-sm text-slate-500 mt-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-4">
                 No tenés ningún pedido en curso. Andá a <strong>Entregar Pedido</strong> para aceptar
                 uno disponible.
               </p>

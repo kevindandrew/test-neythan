@@ -123,7 +123,7 @@ export default function NegocioSucursales() {
     <AppShell roleLabel={usuario?.nombre_negocio || 'Negocio'} navItems={NEGOCIO_NAV_ITEMS}>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-slate-800">Desglose Detallado por Sucursal</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Desglose Detallado por Sucursal</h2>
           <button
             onClick={abrirModal}
             className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
@@ -134,17 +134,17 @@ export default function NegocioSucursales() {
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+          <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">{error}</div>
         )}
         {mensaje && (
-          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-4 py-2">
+          <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-sm px-4 py-2">
             {mensaje}
           </div>
         )}
 
         {!cargando && gananciasPorSucursal.length > 1 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
               <BarChart3 size={20} strokeWidth={2} className="text-red-600" />
               Ganancias por Sucursal
             </h3>
@@ -155,8 +155,8 @@ export default function NegocioSucursales() {
         {cargando ? (
           <div className="space-y-6">
             {[0, 1].map((i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
+                <div className="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
                   <Skeleton className="h-5 w-40" />
                   <SkeletonStatTile />
                 </div>
@@ -170,8 +170,8 @@ export default function NegocioSucursales() {
             ))}
           </div>
         ) : datos.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center space-y-3">
-            <p className="text-slate-600">No hay sucursales registradas.</p>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 text-center space-y-3">
+            <p className="text-slate-600 dark:text-slate-300">No hay sucursales registradas.</p>
             <button
               onClick={abrirModal}
               className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
@@ -189,7 +189,7 @@ export default function NegocioSucursales() {
               const ganancias = parseFloat(item.ganancias || 0);
 
               return (
-                <section key={suc.id_sucursal} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <section key={suc.id_sucursal} className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
                   <div className="bg-red-700 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
                     <h4 className="text-lg font-semibold">{suc.nombre || 'Sucursal'}</h4>
                     <div className="flex items-center gap-4">
@@ -207,8 +207,8 @@ export default function NegocioSucursales() {
                   </div>
 
                   <div className="p-6">
-                    <p className="text-sm text-slate-500 mb-4">
-                      <span className="font-medium text-slate-700">Dirección:</span>{' '}
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                      <span className="font-medium text-slate-700 dark:text-slate-200">Dirección:</span>{' '}
                       {suc.direccion || 'No especificada'}
                     </p>
 
@@ -217,12 +217,12 @@ export default function NegocioSucursales() {
                       Productos en esta Sucursal
                     </h5>
                     {productos.length === 0 ? (
-                      <p className="text-sm text-slate-400 mb-6">No hay productos registrados.</p>
+                      <p className="text-sm text-slate-400 dark:text-slate-500 mb-6">No hay productos registrados.</p>
                     ) : (
                       <div className="overflow-x-auto mb-6">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-left text-slate-500 border-b border-slate-200">
+                            <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                               <th className="py-2 pr-2">Nombre</th>
                               <th className="py-2 pr-2">Descripción</th>
                               <th className="py-2 pr-2">Precio</th>
@@ -231,11 +231,11 @@ export default function NegocioSucursales() {
                           </thead>
                           <tbody>
                             {productos.map((p) => (
-                              <tr key={p.id_producto} className="border-b border-slate-100">
-                                <td className="py-2 pr-2 text-slate-700">{p.nombre || ''}</td>
-                                <td className="py-2 pr-2 text-slate-700">{p.descripcion || '-'}</td>
-                                <td className="py-2 pr-2 text-slate-700">Bs {p.precio_unitario || 0}</td>
-                                <td className="py-2 pr-2 text-slate-700">{p.stock_producto || 0}</td>
+                              <tr key={p.id_producto} className="border-b border-slate-100 dark:border-slate-800">
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">{p.nombre || ''}</td>
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">{p.descripcion || '-'}</td>
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">Bs {p.precio_unitario || 0}</td>
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">{p.stock_producto || 0}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -248,12 +248,12 @@ export default function NegocioSucursales() {
                       Historial de Pedidos
                     </h5>
                     {pedidos.length === 0 ? (
-                      <p className="text-sm text-slate-400">No hay pedidos registrados.</p>
+                      <p className="text-sm text-slate-400 dark:text-slate-500">No hay pedidos registrados.</p>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-left text-slate-500 border-b border-slate-200">
+                            <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                               <th className="py-2 pr-2">ID Pedido</th>
                               <th className="py-2 pr-2">Fecha</th>
                               <th className="py-2 pr-2">Estado</th>
@@ -262,13 +262,13 @@ export default function NegocioSucursales() {
                           </thead>
                           <tbody>
                             {pedidos.map((pe) => (
-                              <tr key={pe.id_pedido} className="border-b border-slate-100">
-                                <td className="py-2 pr-2 text-slate-700">#{pe.id_pedido || ''}</td>
-                                <td className="py-2 pr-2 text-slate-700">{pe.fecha || 'N/D'}</td>
+                              <tr key={pe.id_pedido} className="border-b border-slate-100 dark:border-slate-800">
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">#{pe.id_pedido || ''}</td>
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">{pe.fecha || 'N/D'}</td>
                                 <td className="py-2 pr-2">
                                   <EstadoBadge estado={pe.estado || 'N/D'} />
                                 </td>
-                                <td className="py-2 pr-2 text-slate-700">Bs {pe.total || 0}</td>
+                                <td className="py-2 pr-2 text-slate-700 dark:text-slate-200">Bs {pe.total || 0}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -286,12 +286,12 @@ export default function NegocioSucursales() {
       {/* Modal: Registrar Nueva Sucursal */}
       {modalAbierto && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h5 className="text-lg font-semibold text-slate-800">Registrar Nueva Sucursal</h5>
+              <h5 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Registrar Nueva Sucursal</h5>
               <button
                 onClick={cerrarModal}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                 aria-label="Cerrar"
               >
                 <X size={20} />
@@ -299,14 +299,14 @@ export default function NegocioSucursales() {
             </div>
 
             {errorForm && (
-              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+              <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
                 {errorForm}
               </div>
             )}
 
             <form onSubmit={handleSubmitNuevaSucursal} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Nombre de la Sucursal
                 </label>
                 <input
@@ -314,21 +314,21 @@ export default function NegocioSucursales() {
                   required
                   value={form.nombre}
                   onChange={(e) => actualizarForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Dirección</label>
                 <input
                   type="text"
                   required
                   value={form.direccion}
                   onChange={(e) => actualizarForm('direccion', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
                   Ubicación exacta
                 </label>
                 <SelectorUbicacion
@@ -355,20 +355,20 @@ export default function NegocioSucursales() {
       {/* Modal: Confirmar eliminación */}
       {sucursalAEliminar && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
             <div className="flex flex-col items-center text-center mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 mb-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40 mb-3">
                 <AlertTriangle size={22} className="text-red-600" />
               </div>
-              <h5 className="text-lg font-semibold text-slate-800">Eliminar Sucursal</h5>
+              <h5 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Eliminar Sucursal</h5>
             </div>
-            <p className="text-sm text-slate-600 mb-4 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 text-center">
               ¿Estás seguro de eliminar la sucursal "{sucursalAEliminar.nombre}"? Se perderá la
               vinculación de sus productos.
             </p>
 
             {errorEliminar && (
-              <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+              <div className="mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
                 {errorEliminar}
               </div>
             )}
@@ -377,7 +377,7 @@ export default function NegocioSucursales() {
               <button
                 onClick={cancelarEliminar}
                 disabled={eliminando}
-                className="text-sm border border-slate-300 text-slate-700 rounded-lg px-4 py-2 hover:bg-slate-100 disabled:opacity-60 transition"
+                className="text-sm border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-60 transition"
               >
                 Cancelar
               </button>

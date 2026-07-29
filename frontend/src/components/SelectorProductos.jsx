@@ -68,26 +68,30 @@ export default function SelectorProductos({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg overflow-hidden max-h-[85vh] flex flex-col">
+      <div className="w-full max-w-3xl bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden max-h-[85vh] flex flex-col">
         <div className="flex items-start justify-between px-6 pt-6">
           <div className="min-w-0">
-            <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 truncate">
+            <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100 truncate">
               <Package size={18} className="text-red-600 shrink-0" />
               {sucursalNombre}
             </h5>
-            {nombreNegocio && <p className="text-xs text-slate-400 mt-0.5 truncate">{nombreNegocio}</p>}
+            {nombreNegocio && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                {nombreNegocio}
+              </p>
+            )}
           </div>
           <button
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="text-slate-400 hover:text-slate-600 shrink-0"
+            className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 shrink-0"
           >
             <X size={20} />
           </button>
         </div>
 
         {error && (
-          <div className="mx-6 mt-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+          <div className="mx-6 mt-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
             {error}
           </div>
         )}
@@ -102,7 +106,7 @@ export default function SelectorProductos({
             </div>
 
             {/* Columna derecha: resto de productos de la sucursal */}
-            <div className="border-t sm:border-t-0 sm:border-l border-slate-100 p-4 space-y-2">
+            <div className="border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-700 p-4 space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5">
                   <Skeleton className="h-14 w-14 rounded-lg shrink-0" />
@@ -115,7 +119,9 @@ export default function SelectorProductos({
             </div>
           </div>
         ) : productos.length === 0 ? (
-          <p className="text-sm text-slate-400 px-6 py-8">No hay productos en esta sucursal.</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500 px-6 py-8">
+            No hay productos en esta sucursal.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 overflow-hidden mt-4 flex-1 min-h-0">
             {/* Columna izquierda: producto enfocado */}
@@ -128,40 +134,40 @@ export default function SelectorProductos({
                     className="w-full h-48 object-cover rounded-xl mb-4"
                     loading="lazy"
                   />
-                  <h3 className="text-lg font-semibold text-slate-800">
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                     {productoFocal.nombre_producto}
                   </h3>
-                  <p className="text-sm text-slate-500 mb-4">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                     Bs. {productoFocal.precio} · Stock: {productoFocal.stock}
                   </p>
 
                   <div className="mt-auto">
                     {enCarritoFocal > 0 ? (
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center border border-slate-300 rounded-lg bg-white">
+                        <div className="flex items-center border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900">
                           <button
                             onClick={() => cart.decrementar(productoFocal.id_producto)}
                             disabled={enCarritoFocal <= 1}
                             aria-label="Restar cantidad"
-                            className="p-2.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
+                            className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-red-600 disabled:opacity-40"
                           >
                             <Minus size={15} />
                           </button>
-                          <span className="w-10 text-center text-sm font-medium text-slate-800">
+                          <span className="w-10 text-center text-sm font-medium text-slate-800 dark:text-slate-100">
                             {enCarritoFocal}
                           </span>
                           <button
                             onClick={() => cart.incrementar(productoFocal.id_producto)}
                             disabled={enCarritoFocal >= productoFocal.stock}
                             aria-label="Sumar cantidad"
-                            className="p-2.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
+                            className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-red-600 disabled:opacity-40"
                           >
                             <Plus size={15} />
                           </button>
                         </div>
                         <button
                           onClick={() => cart.quitarProducto(productoFocal.id_producto)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg px-3 py-2.5 transition"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg px-3 py-2.5 transition"
                         >
                           Quitar del carrito
                         </button>
@@ -181,7 +187,7 @@ export default function SelectorProductos({
             </div>
 
             {/* Columna derecha: resto de productos de la sucursal */}
-            <div className="border-t sm:border-t-0 sm:border-l border-slate-100 p-4 overflow-y-auto space-y-2">
+            <div className="border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-700 p-4 overflow-y-auto space-y-2">
               {productos.map((p) => {
                 const enfocado = p.id_producto === focoId;
                 const enCarrito = cantidadEnCarrito(p.id_producto);
@@ -191,8 +197,8 @@ export default function SelectorProductos({
                     onClick={() => setFocoId(p.id_producto)}
                     className={`w-full flex items-center gap-3 rounded-xl border p-2.5 text-left transition ${
                       enfocado
-                        ? 'border-red-400 ring-2 ring-red-100 bg-red-50/40'
-                        : 'border-slate-200 hover:border-red-300'
+                        ? 'border-red-400 ring-2 ring-red-100 dark:ring-red-950/40 bg-red-50/40 dark:bg-red-950/20'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-red-300'
                     }`}
                   >
                     <img
@@ -202,10 +208,10 @@ export default function SelectorProductos({
                       loading="lazy"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-800 truncate">
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
                         {p.nombre_producto}
                       </p>
-                      <p className="text-xs text-slate-500">Bs. {p.precio}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Bs. {p.precio}</p>
                     </div>
                     {enCarrito > 0 && (
                       <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">

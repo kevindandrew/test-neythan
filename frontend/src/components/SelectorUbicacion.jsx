@@ -70,14 +70,14 @@ export default function SelectorUbicacion({ value, onChange, alto = 260 }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
           {posicion ? 'Punto marcado en el mapa.' : 'Tocá el mapa para marcar la ubicación exacta.'}
         </p>
         <button
           type="button"
           onClick={usarMiUbicacion}
           disabled={buscandoGps}
-          className="flex items-center gap-1.5 text-xs font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+          className="flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50"
         >
           <LocateFixed size={14} />
           {buscandoGps ? 'Buscando...' : 'Usar mi ubicación'}
@@ -85,11 +85,13 @@ export default function SelectorUbicacion({ value, onChange, alto = 260 }) {
       </div>
 
       {errorGps && (
-        <div className="rounded-lg bg-red-50 text-red-700 text-xs px-3 py-1.5">{errorGps}</div>
+        <div className="rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs px-3 py-1.5">
+          {errorGps}
+        </div>
       )}
 
       <div
-        className="rounded-xl overflow-hidden border border-slate-200"
+        className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700"
         style={{ height: alto }}
       >
         <MapContainer

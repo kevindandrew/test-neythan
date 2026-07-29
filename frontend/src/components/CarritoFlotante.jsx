@@ -124,16 +124,16 @@ export default function CarritoFlotante() {
 
       {abierto && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
             {vista === 'confirmado' ? (
               <div className="text-center py-4">
-                <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <CheckCircle2 size={30} strokeWidth={2} />
                 </div>
-                <h2 className="text-lg font-semibold text-slate-800 mb-1">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">
                   ¡Compra confirmada!
                 </h2>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                   {pedidosCreados.length === 1
                     ? 'Tu pedido ya está disponible para que un repartidor lo acepte.'
                     : `Se generaron ${pedidosCreados.length} pedidos (uno por cada tienda), ya disponibles para que un repartidor los acepte.`}
@@ -142,12 +142,12 @@ export default function CarritoFlotante() {
                   {pedidosCreados.map((p) => (
                     <div
                       key={p.id_pedido}
-                      className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700"
+                      className="rounded-lg bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-700 dark:text-slate-200"
                     >
                       <p className="font-medium">
                         {p.nombre_negocio} · {p.sucursal_nombre}
                       </p>
-                      <p className="text-slate-500">
+                      <p className="text-slate-500 dark:text-slate-400">
                         Pedido #{p.id_pedido} · Bs. {Number(p.total_pagar).toFixed(2)}
                       </p>
                     </div>
@@ -167,15 +167,17 @@ export default function CarritoFlotante() {
                   <button
                     onClick={() => setVista('carrito')}
                     aria-label="Volver al carrito"
-                    className="text-slate-400 hover:text-slate-600"
+                    className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     <ArrowLeft size={20} />
                   </button>
-                  <h3 className="text-lg font-semibold text-slate-800">Confirmar compra</h3>
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                    Confirmar compra
+                  </h3>
                 </div>
 
                 {error && (
-                  <div className="mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">
+                  <div className="mb-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm px-4 py-2">
                     {error}
                   </div>
                 )}
@@ -183,7 +185,7 @@ export default function CarritoFlotante() {
                 <div className="overflow-y-auto -mx-1 px-1 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                         <MapPin size={14} />
                         Dirección de entrega
                       </label>
@@ -192,18 +194,18 @@ export default function CarritoFlotante() {
                         value={direccion}
                         onChange={(e) => setDireccion(e.target.value)}
                         placeholder="Dirección tal cual aparece en Google Maps"
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                       />
                     </div>
                     <div>
-                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                         <Navigation size={14} />
                         Zona
                       </label>
                       <select
                         value={zonaId}
                         onChange={(e) => setZonaId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                       >
                         {tarifas.map((t) => (
                           <option key={t.id_tarifa} value={t.id_tarifa}>
@@ -215,7 +217,7 @@ export default function CarritoFlotante() {
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
                       <MapPin size={14} />
                       Ubicación exacta de entrega
                     </label>
@@ -231,9 +233,9 @@ export default function CarritoFlotante() {
                       return (
                         <div
                           key={grupo.id_sucursal}
-                          className="rounded-xl border border-slate-200 p-4"
+                          className="rounded-xl border border-slate-200 dark:border-slate-700 p-4"
                         >
-                          <p className="flex items-center gap-1.5 font-medium text-slate-800 text-sm mb-2">
+                          <p className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-100 text-sm mb-2">
                             <Store size={14} className="text-red-600" />
                             {grupo.nombre_negocio} · {grupo.sucursal_nombre}
                           </p>
@@ -246,16 +248,16 @@ export default function CarritoFlotante() {
                                   className="h-8 w-8 rounded-md object-cover shrink-0"
                                   loading="lazy"
                                 />
-                                <span className="flex-1 truncate text-sm text-slate-600">
+                                <span className="flex-1 truncate text-sm text-slate-600 dark:text-slate-300">
                                   {i.nombre_producto} × {i.cantidad}
                                 </span>
-                                <span className="shrink-0 text-sm text-slate-600">
+                                <span className="shrink-0 text-sm text-slate-600 dark:text-slate-300">
                                   Bs. {(parseFloat(i.precio) * i.cantidad).toFixed(2)}
                                 </span>
                               </div>
                             ))}
                           </div>
-                          <div className="flex justify-between text-sm font-medium text-slate-700 border-t border-slate-100 pt-2">
+                          <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800 pt-2">
                             <span>Subtotal + envío</span>
                             <span>Bs. {(subtotal + costoEnvio).toFixed(2)}</span>
                           </div>
@@ -265,9 +267,9 @@ export default function CarritoFlotante() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       Total ({cart.grupos.length} {cart.grupos.length === 1 ? 'tienda' : 'tiendas'})
                     </span>
                     <span className="text-lg font-semibold text-red-600">
@@ -292,28 +294,31 @@ export default function CarritoFlotante() {
             ) : (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
                     <ShoppingCart size={20} className="text-red-600" />
                     Tu carrito
                   </h3>
                   <button
                     onClick={cerrar}
                     aria-label="Cerrar"
-                    className="text-slate-400 hover:text-slate-600"
+                    className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     <X size={20} />
                   </button>
                 </div>
 
                 {cart.grupos.length === 0 ? (
-                  <p className="text-sm text-slate-400 py-6 text-center">
+                  <p className="text-sm text-slate-400 dark:text-slate-500 py-6 text-center">
                     Todavía no agregaste productos. Elegí algo desde "Para Ti" o "Locales".
                   </p>
                 ) : (
                   <div className="overflow-y-auto -mx-1 px-1 space-y-4">
                     {cart.grupos.map((grupo) => (
-                      <div key={grupo.id_sucursal} className="rounded-xl border border-slate-200 p-4">
-                        <p className="flex items-center gap-1.5 font-medium text-slate-800 text-sm mb-3">
+                      <div
+                        key={grupo.id_sucursal}
+                        className="rounded-xl border border-slate-200 dark:border-slate-700 p-4"
+                      >
+                        <p className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-100 text-sm mb-3">
                           <Store size={14} className="text-red-600" />
                           {grupo.nombre_negocio} · {grupo.sucursal_nombre}
                         </p>
@@ -327,27 +332,31 @@ export default function CarritoFlotante() {
                                 loading="lazy"
                               />
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm text-slate-700 truncate">{i.nombre_producto}</p>
-                                <p className="text-xs text-slate-400">Bs. {i.precio} c/u</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-200 truncate">
+                                  {i.nombre_producto}
+                                </p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500">
+                                  Bs. {i.precio} c/u
+                                </p>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <div className="flex items-center border border-slate-300 rounded-lg bg-white">
+                                <div className="flex items-center border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900">
                                   <button
                                     onClick={() => cart.decrementar(i.id_producto)}
                                     disabled={i.cantidad <= 1}
                                     aria-label="Restar cantidad"
-                                    className="p-1.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
+                                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-red-600 disabled:opacity-40"
                                   >
                                     <Minus size={13} />
                                   </button>
-                                  <span className="w-6 text-center text-xs font-medium text-slate-800">
+                                  <span className="w-6 text-center text-xs font-medium text-slate-800 dark:text-slate-100">
                                     {i.cantidad}
                                   </span>
                                   <button
                                     onClick={() => cart.incrementar(i.id_producto)}
                                     disabled={i.cantidad >= i.stock}
                                     aria-label="Sumar cantidad"
-                                    className="p-1.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
+                                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-red-600 disabled:opacity-40"
                                   >
                                     <Plus size={13} />
                                   </button>
@@ -355,7 +364,7 @@ export default function CarritoFlotante() {
                                 <button
                                   onClick={() => cart.quitarProducto(i.id_producto)}
                                   aria-label="Quitar del carrito"
-                                  className="p-1.5 text-slate-400 hover:text-red-600 transition"
+                                  className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-600 transition"
                                 >
                                   <Trash2 size={15} />
                                 </button>
@@ -368,9 +377,11 @@ export default function CarritoFlotante() {
                   </div>
                 )}
 
-                <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm font-medium text-slate-700">Subtotal</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Subtotal
+                    </span>
                     <span className="text-lg font-semibold text-red-600">
                       Bs. {cart.totalCarrito.toFixed(2)}
                     </span>
