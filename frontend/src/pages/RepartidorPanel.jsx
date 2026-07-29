@@ -5,6 +5,7 @@ import EstadoBadge from '../components/EstadoBadge';
 import AppShell from '../components/AppShell';
 import PedidoMapa from '../components/PedidoMapa';
 import { Skeleton } from '../components/Skeleton';
+import { perfilDesdeVehiculo } from '../utils/osrm';
 import {
   Home,
   PackageSearch,
@@ -36,6 +37,7 @@ export default function RepartidorPanel() {
   const [error, setError] = useState('');
 
   const [infoRepartidor, setInfoRepartidor] = useState(null);
+  const [perfilTransporte, setPerfilTransporte] = useState('driving');
   const [estadoActual, setEstadoActual] = useState('disponible');
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [errorEstado, setErrorEstado] = useState('');
@@ -60,6 +62,13 @@ export default function RepartidorPanel() {
         const datosRepartidor = await api.get('/api/repartidor/pedidos');
         setEstadoActual(datosRepartidor.estado_repartidor);
         setInfoRepartidor(datosRepartidor.repartidor);
+      }
+
+      try {
+        const vehiculo = await api.get('/api/repartidor/vehiculo');
+        setPerfilTransporte(perfilDesdeVehiculo(vehiculo?.tipo));
+      } catch {
+        // sin vehículo registrado todavía: se usa 'driving' por defecto
       }
     } catch (err) {
       setError(err.message || 'No se pudo cargar tu panel.');
@@ -142,11 +151,16 @@ export default function RepartidorPanel() {
                 origen={{
                   direccion: pedidoActual.sucursal_direccion,
                   etiqueta: pedidoActual.sucursal_nombre,
+                  lat: pedidoActual.sucursal_lat,
+                  lng: pedidoActual.sucursal_lng,
                 }}
                 destino={{
                   direccion: pedidoActual.cliente_direccion,
                   etiqueta: pedidoActual.cliente_nombre,
+                  lat: pedidoActual.cliente_lat,
+                  lng: pedidoActual.cliente_lng,
                 }}
+                perfil={perfilTransporte}
               />
 
             <div className="space-y-4">

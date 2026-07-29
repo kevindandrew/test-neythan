@@ -1,11 +1,14 @@
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { coordsDesdeDireccion } from '../utils/pseudoCoords';
+import { geocodearDireccion } from '../utils/geocode';
+import { obtenerRuta, formatearDistancia, formatearDuracion } from '../utils/osrm';
+import { Skeleton } from './Skeleton';
 
 // Vite no resuelve los íconos por defecto de Leaflet automáticamente;
 // hay que apuntarlos a mano una sola vez.
@@ -39,54 +42,139 @@ function AjustarVista({ puntos }) {
 
 /**
  * Mapa (OpenStreetMap vía Leaflet, 100% gratuito, sin API key) que ubica un
- * pedido en curso. Si se pasan origen y destino, muestra ambos puntos (la
- * sucursal donde se recoge y la dirección del cliente) unidos por una línea
- * recta a modo de ruta orientativa. Ver utils/pseudoCoords.js: las
- * coordenadas son aproximadas, no geocoding real.
+ * pedido en curso. Geocodifica las direcciones reales con Nominatim y traza
+ * la ruta real siguiendo calles con OSRM (según el perfil de transporte
+ * indicado). Si el geocoding o el ruteo fallan (sin internet, dirección no
+ * encontrada, etc.), degrada con gracia: coordenadas aproximadas
+ * (ver utils/pseudoCoords.js) y una línea recta entre los dos puntos.
  */
-export default function PedidoMapa({ direccion, etiqueta, origen, destino }) {
+export default function PedidoMapa({ direccion, etiqueta, origen, destino, perfil = 'driving' }) {
   const tieneDosPuntos = Boolean(origen && destino);
 
-  const posicionUnica = coordsDesdeDireccion(direccion);
-  const posicionOrigen = tieneDosPuntos ? coordsDesdeDireccion(origen.direccion) : null;
-  const posicionDestino = tieneDosPuntos ? coordsDesdeDireccion(destino.direccion) : null;
+  const [cargando, setCargando] = useState(true);
+  const [posicionOrigen, setPosicionOrigen] = useState(null);
+  const [posicionDestino, setPosicionDestino] = useState(null);
+  const [posicionUnica, setPosicionUnica] = useState(null);
+  const [ruta, setRuta] = useState(null);
 
-  const puntos = tieneDosPuntos ? [posicionOrigen, posicionDestino] : [posicionUnica];
+  useEffect(() => {
+    let activo = true;
+
+    async function resolver() {
+      setCargando(true);
+      setRuta(null);
+
+      if (tieneDosPuntos) {
+        const tieneCoordsOrigen = origen.lat != null && origen.lng != null;
+        const tieneCoordsDestino = destino.lat != null && destino.lng != null;
+
+        const [geoOrigen, geoDestino] = await Promise.all([
+          tieneCoordsOrigen ? null : geocodearDireccion(origen.direccion),
+          tieneCoordsDestino ? null : geocodearDireccion(destino.direccion),
+        ]);
+        const posOrigen = tieneCoordsOrigen
+          ? { lat: origen.lat, lng: origen.lng }
+          : geoOrigen || coordsToObj(coordsDesdeDireccion(origen.direccion));
+        const posDestino = tieneCoordsDestino
+          ? { lat: destino.lat, lng: destino.lng }
+          : geoDestino || coordsToObj(coordsDesdeDireccion(destino.direccion));
+        if (!activo) return;
+        setPosicionOrigen(posOrigen);
+        setPosicionDestino(posDestino);
+
+        const rutaReal = await obtenerRuta(posOrigen, posDestino, perfil);
+        if (!activo) return;
+        setRuta(rutaReal);
+      } else {
+        const geo = await geocodearDireccion(direccion);
+        const pos = geo || coordsToObj(coordsDesdeDireccion(direccion));
+        if (!activo) return;
+        setPosicionUnica(pos);
+      }
+
+      if (activo) setCargando(false);
+    }
+
+    resolver();
+    return () => {
+      activo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    direccion,
+    origen?.direccion,
+    origen?.lat,
+    origen?.lng,
+    destino?.direccion,
+    destino?.lat,
+    destino?.lng,
+    perfil,
+  ]);
+
+  if (cargando) {
+    return <Skeleton className="w-full h-full min-h-70 rounded-xl" />;
+  }
+
+  const puntos = tieneDosPuntos
+    ? [objToArr(posicionOrigen), objToArr(posicionDestino)]
+    : [objToArr(posicionUnica)];
   const centroInicial = puntos[0];
+  const lineaRuta = ruta?.geometria || puntos;
 
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-200 h-full min-h-70">
-      <MapContainer
-        center={centroInicial}
-        zoom={14}
-        scrollWheelZoom={false}
-        style={{ height: '100%', width: '100%', minHeight: 280 }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <AjustarVista puntos={puntos} />
+    <div className="rounded-xl overflow-hidden border border-slate-200 h-full min-h-70 flex flex-col">
+      <div className="flex-1 min-h-0">
+        <MapContainer
+          center={centroInicial}
+          zoom={14}
+          scrollWheelZoom={false}
+          style={{ height: '100%', width: '100%', minHeight: 280 }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <AjustarVista puntos={puntos} />
 
-        {tieneDosPuntos ? (
-          <>
-            <Marker position={posicionOrigen} icon={iconSucursal}>
-              <Popup>{origen.etiqueta || 'Sucursal'}</Popup>
+          {tieneDosPuntos ? (
+            <>
+              <Marker position={objToArr(posicionOrigen)} icon={iconSucursal}>
+                <Popup>{origen.etiqueta || 'Sucursal'}</Popup>
+              </Marker>
+              <Marker position={objToArr(posicionDestino)}>
+                <Popup>{destino.etiqueta || 'Cliente'}</Popup>
+              </Marker>
+              <Polyline
+                positions={lineaRuta}
+                pathOptions={
+                  ruta
+                    ? { color: '#dc2626', weight: 4, opacity: 0.8 }
+                    : { color: '#dc2626', weight: 4, opacity: 0.6, dashArray: '8 6' }
+                }
+              />
+            </>
+          ) : (
+            <Marker position={objToArr(posicionUnica)}>
+              <Popup>{etiqueta || direccion}</Popup>
             </Marker>
-            <Marker position={posicionDestino}>
-              <Popup>{destino.etiqueta || 'Cliente'}</Popup>
-            </Marker>
-            <Polyline
-              positions={[posicionOrigen, posicionDestino]}
-              pathOptions={{ color: '#dc2626', weight: 4, opacity: 0.7, dashArray: '8 6' }}
-            />
-          </>
-        ) : (
-          <Marker position={posicionUnica}>
-            <Popup>{etiqueta || direccion}</Popup>
-          </Marker>
-        )}
-      </MapContainer>
+          )}
+        </MapContainer>
+      </div>
+
+      {tieneDosPuntos && ruta && (
+        <div className="flex items-center justify-center gap-4 border-t border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-600">
+          <span>📍 {formatearDistancia(ruta.distanciaMetros)}</span>
+          <span>⏱ {formatearDuracion(ruta.duracionSegundos)}</span>
+        </div>
+      )}
     </div>
   );
+}
+
+function coordsToObj([lat, lng]) {
+  return { lat, lng };
+}
+
+function objToArr(pos) {
+  return [pos.lat, pos.lng];
 }

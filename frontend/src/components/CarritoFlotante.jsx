@@ -16,6 +16,7 @@ import { useCart } from '../cart/CartContext';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 import { imagenProducto } from '../utils/placeholderImage';
+import SelectorUbicacion from './SelectorUbicacion';
 
 export default function CarritoFlotante() {
   const auth = useAuth();
@@ -23,6 +24,7 @@ export default function CarritoFlotante() {
   const [abierto, setAbierto] = useState(false);
   const [vista, setVista] = useState('carrito'); // 'carrito' | 'checkout' | 'confirmado'
   const [direccion, setDireccion] = useState('');
+  const [ubicacion, setUbicacion] = useState(null);
   const [tarifas, setTarifas] = useState([]);
   const [zonaId, setZonaId] = useState('');
   const [confirmando, setConfirmando] = useState(false);
@@ -45,6 +47,11 @@ export default function CarritoFlotante() {
     setError('');
     setVista('carrito');
     setDireccion(auth.usuario?.direccion || '');
+    setUbicacion(
+      auth.usuario?.lat != null && auth.usuario?.lng != null
+        ? { lat: auth.usuario.lat, lng: auth.usuario.lng }
+        : null
+    );
     const zonaCliente = tarifas.find(
       (t) => t.zona?.toLowerCase() === auth.usuario?.zona?.toLowerCase()
     );
@@ -75,6 +82,8 @@ export default function CarritoFlotante() {
           total: totalGrupo,
           direccion,
           zona: zonaSeleccionada?.zona,
+          lat: ubicacion?.lat,
+          lng: ubicacion?.lng,
           detalles,
         });
         creados.push({
@@ -205,6 +214,14 @@ export default function CarritoFlotante() {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
+                      <MapPin size={14} />
+                      Ubicación exacta de entrega
+                    </label>
+                    <SelectorUbicacion value={ubicacion} onChange={setUbicacion} alto={200} />
+                  </div>
+
                   <div className="space-y-3">
                     {cart.grupos.map((grupo) => {
                       const subtotal = grupo.items.reduce(
@@ -259,7 +276,13 @@ export default function CarritoFlotante() {
                   </div>
                   <button
                     onClick={confirmarCompra}
-                    disabled={confirmando || !direccion.trim() || !zonaId}
+                    disabled={
+                      confirmando ||
+                      !direccion.trim() ||
+                      !zonaId ||
+                      ubicacion?.lat == null ||
+                      ubicacion?.lng == null
+                    }
                     className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition"
                   >
                     {confirmando ? 'Confirmando...' : 'Confirmar compra'}

@@ -27,6 +27,11 @@ CREATE TABLE cliente (
     -- se usa para calcular el costo extra de envío, que luego pasa íntegro como
     -- comisión extra al repartidor que entrega el pedido.
     zona VARCHAR(100) DEFAULT NULL,
+    -- Último punto de entrega que el cliente marcó en el mapa (se reusa como
+    -- default en el próximo checkout). Ver pedido.lat/lng para el punto real
+    -- de CADA pedido, que puede diferir de este.
+    lat DECIMAL(10,7) DEFAULT NULL,
+    lng DECIMAL(10,7) DEFAULT NULL,
     FOREIGN KEY (ci_cliente) REFERENCES persona(ci)
 );
 
@@ -69,6 +74,10 @@ CREATE TABLE sucursal (
     id_sucursal INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     direccion VARCHAR(200),
+    -- Punto exacto marcado en el mapa por el negocio al crear la sucursal.
+    -- Se usa directamente en el mapa del repartidor (no se re-geocodifica).
+    lat DECIMAL(10,7) DEFAULT NULL,
+    lng DECIMAL(10,7) DEFAULT NULL,
     telefono VARCHAR(20),
     id_negocio INT NOT NULL,
     FOREIGN KEY (id_negocio) REFERENCES negocio(id_negocio)
@@ -113,6 +122,10 @@ CREATE TABLE pedido (
     estado_pedido VARCHAR(30) DEFAULT 'Pendiente',
     token VARCHAR(5),
     direccion VARCHAR(200),
+    -- Punto de entrega marcado en el mapa por el cliente al confirmar ESTE
+    -- pedido (puede diferir de cliente.lat/lng, su último punto usado).
+    lat DECIMAL(10,7) DEFAULT NULL,
+    lng DECIMAL(10,7) DEFAULT NULL,
     total DECIMAL(10,2) NOT NULL,
     ci_cliente INT NOT NULL,
     ci_repartidor INT,
@@ -186,8 +199,8 @@ INSERT INTO reporte (id_reporte, descripcion) VALUES (1, 'Reporte inicial');
 
 -- Cliente de prueba: cliente@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
-(1001, 'Juan', 'Perez', '70000001', 'cliente@chaski.com', 'Av. Siempre Viva 123');
-INSERT INTO cliente (ci_cliente, contrasena) VALUES (1001, '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
+(1001, 'Juan', 'Perez', '70000001', 'cliente@chaski.com', 'Av. San Martin, Equipetrol, Santa Cruz de la Sierra');
+INSERT INTO cliente (ci_cliente, contrasena, lat, lng) VALUES (1001, '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm', -17.7680, -63.1975);
 
 -- Dueño de negocio de prueba: negocio@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
@@ -204,8 +217,8 @@ INSERT INTO vehiculo (ci_repartidor, tipo, placa, modelo, color) VALUES
 (3001, 'Motocicleta', '1234-ABC', 'Honda Wave 110', 'Rojo');
 
 -- Sucursal y productos de ejemplo
-INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES
-('Sucursal Centro', 'Calle Falsa 123', '70000000', (SELECT id_negocio FROM negocio WHERE correo_negocio = 'negocio@chaski.com'));
+INSERT INTO sucursal (nombre, direccion, lat, lng, telefono, id_negocio) VALUES
+('Sucursal Centro', 'Calle Junín, Casco Viejo, Santa Cruz de la Sierra', -17.7833, -63.1821, '70000000', (SELECT id_negocio FROM negocio WHERE correo_negocio = 'negocio@chaski.com'));
 
 INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES
 ('Hamburguesa', 'Hamburguesa clásica', 25.00, 50),
@@ -231,9 +244,9 @@ INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUE
 ('Pizza Nostra', 2002, 'pizzanostra@chaski.com', '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
 SET @id_pizza = LAST_INSERT_ID();
 
-INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Norte', 'Av. Cristo Redentor 500', '70099101', @id_pizza);
+INSERT INTO sucursal (nombre, direccion, lat, lng, telefono, id_negocio) VALUES ('Sucursal Norte', 'Av. Cristo Redentor, Santa Cruz de la Sierra', -17.7550, -63.1890, '70099101', @id_pizza);
 SET @suc_pizza_norte = LAST_INSERT_ID();
-INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Sur', 'Av. Beni 300', '70099102', @id_pizza);
+INSERT INTO sucursal (nombre, direccion, lat, lng, telefono, id_negocio) VALUES ('Sucursal Sur', 'Av. Beni, Santa Cruz de la Sierra', -17.8100, -63.1700, '70099102', @id_pizza);
 SET @suc_pizza_sur = LAST_INSERT_ID();
 
 INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Pizza Muzzarella', 'Pizza clásica de muzzarella', 45.00, 30);
@@ -255,9 +268,9 @@ INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUE
 ('Sushi Ichiban', 2003, 'sushiichiban@chaski.com', '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
 SET @id_sushi = LAST_INSERT_ID();
 
-INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Equipetrol', 'Calle Portugal 45', '70099201', @id_sushi);
+INSERT INTO sucursal (nombre, direccion, lat, lng, telefono, id_negocio) VALUES ('Sucursal Equipetrol', 'Calle Portugal, Equipetrol, Santa Cruz de la Sierra', -17.7650, -63.1980, '70099201', @id_sushi);
 SET @suc_sushi_equipetrol = LAST_INSERT_ID();
-INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Las Palmas', 'Av. Roca y Coronado 800', '70099202', @id_sushi);
+INSERT INTO sucursal (nombre, direccion, lat, lng, telefono, id_negocio) VALUES ('Sucursal Las Palmas', 'Av. Roca y Coronado, Santa Cruz de la Sierra', -17.7950, -63.1650, '70099202', @id_sushi);
 SET @suc_sushi_palmas = LAST_INSERT_ID();
 
 INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALUES ('Sushi California', 'Roll de palta y kanikama', 38.00, 25);

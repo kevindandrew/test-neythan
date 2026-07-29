@@ -46,7 +46,7 @@ export default function AppShell({ roleLabel, navItems, children }) {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 isActive
-                  ? 'bg-red-500/15 text-red-300'
+                  ? 'bg-[#A60321] text-white'
                   : 'text-slate-300 hover:bg-slate-800 hover:text-white'
               }`
             }

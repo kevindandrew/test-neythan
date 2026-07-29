@@ -145,6 +145,8 @@ def login():
                     "correo": cliente["correo"],
                     "direccion": cliente["direccion"],
                     "zona": cliente["zona"],
+                    "lat": cliente["lat"],
+                    "lng": cliente["lng"],
                 },
             }),
             200,
@@ -699,6 +701,8 @@ def agregar_sucursal_negocio():
 
     nombre = data.get("nombre")
     direccion = data.get("direccion")
+    lat = data.get("lat")
+    lng = data.get("lng")
 
     if not nombre or not direccion:
         return jsonify({"error": "Faltan datos obligatorios (nombre y dirección)"}), 400
@@ -706,10 +710,10 @@ def agregar_sucursal_negocio():
     cursor = mysql.connection.cursor()
     cursor.execute(
         """
-        INSERT INTO sucursal (nombre, direccion, id_negocio) 
-        VALUES (%s, %s, %s)
+        INSERT INTO sucursal (nombre, direccion, id_negocio, lat, lng)
+        VALUES (%s, %s, %s, %s, %s)
     """,
-        (nombre, direccion, id_negocio),
+        (nombre, direccion, id_negocio, lat, lng),
     )
     mysql.connection.commit()
     cursor.close()
@@ -840,7 +844,8 @@ def detalle_pedido_repartidor(id_pedido):
         """
         SELECT p.id_pedido, p.fecha, p.estado_pedido, p.total,
                pe.nombre AS cliente_nombre, pe.telefono AS cliente_telefono,
-               pe.direccion AS cliente_direccion
+               COALESCE(p.direccion, pe.direccion) AS cliente_direccion,
+               p.lat AS cliente_lat, p.lng AS cliente_lng
         FROM pedido p
         JOIN cliente c ON p.ci_cliente = c.ci_cliente
         JOIN persona pe ON c.ci_cliente = pe.ci
@@ -856,7 +861,8 @@ def detalle_pedido_repartidor(id_pedido):
 
     cursor.execute(
         """
-        SELECT dp.cantidad, pr.nombre, pr.precio_unitario, s.nombre AS sucursal_nombre
+        SELECT dp.cantidad, pr.nombre, pr.precio_unitario, s.nombre AS sucursal_nombre,
+               s.direccion AS sucursal_direccion, s.lat AS sucursal_lat, s.lng AS sucursal_lng
         FROM detalle_pedido dp
         JOIN producto pr ON dp.id_producto = pr.id_producto
         JOIN sucursal s ON dp.id_sucursal = s.id_sucursal
@@ -881,8 +887,10 @@ def pedidos_disponibles_repartidor():
     cursor.execute(
         """
         SELECT p.id_pedido, p.fecha, p.total,
-               pe.nombre AS cliente_nombre, pe.direccion AS cliente_direccion,
-               s.nombre AS sucursal_nombre, n.nombre_negocio
+               pe.nombre AS cliente_nombre, COALESCE(p.direccion, pe.direccion) AS cliente_direccion,
+               p.lat AS cliente_lat, p.lng AS cliente_lng,
+               s.nombre AS sucursal_nombre, s.direccion AS sucursal_direccion,
+               s.lat AS sucursal_lat, s.lng AS sucursal_lng, n.nombre_negocio
         FROM pedido p
         JOIN cliente c ON p.ci_cliente = c.ci_cliente
         JOIN persona pe ON c.ci_cliente = pe.ci
@@ -890,7 +898,8 @@ def pedidos_disponibles_repartidor():
         JOIN sucursal s ON dp.id_sucursal = s.id_sucursal
         JOIN negocio n ON s.id_negocio = n.id_negocio
         WHERE p.estado_pedido = 'Pendiente' AND p.ci_repartidor IS NULL
-        GROUP BY p.id_pedido, p.fecha, p.total, pe.nombre, pe.direccion, s.nombre, n.nombre_negocio
+        GROUP BY p.id_pedido, p.fecha, p.total, pe.nombre, p.direccion, pe.direccion,
+                 p.lat, p.lng, s.nombre, s.direccion, s.lat, s.lng, n.nombre_negocio
         ORDER BY p.fecha ASC
         """
     )
@@ -981,8 +990,10 @@ def pedido_actual_repartidor():
         """
         SELECT p.id_pedido, p.fecha, p.estado_pedido, p.total,
                pe.nombre AS cliente_nombre, pe.telefono AS cliente_telefono,
-               pe.direccion AS cliente_direccion,
-               s.nombre AS sucursal_nombre, s.direccion AS sucursal_direccion
+               COALESCE(p.direccion, pe.direccion) AS cliente_direccion,
+               p.lat AS cliente_lat, p.lng AS cliente_lng,
+               s.nombre AS sucursal_nombre, s.direccion AS sucursal_direccion,
+               s.lat AS sucursal_lat, s.lng AS sucursal_lng
         FROM pedido p
         JOIN cliente c ON p.ci_cliente = c.ci_cliente
         JOIN persona pe ON c.ci_cliente = pe.ci
@@ -990,7 +1001,8 @@ def pedido_actual_repartidor():
         JOIN sucursal s ON dp.id_sucursal = s.id_sucursal
         WHERE p.ci_repartidor = %s AND p.estado_pedido = 'En Camino'
         GROUP BY p.id_pedido, p.fecha, p.estado_pedido, p.total, pe.nombre,
-                 pe.telefono, pe.direccion, s.nombre, s.direccion
+                 pe.telefono, p.direccion, pe.direccion, p.lat, p.lng,
+                 s.nombre, s.direccion, s.lat, s.lng
         ORDER BY p.id_pedido DESC
         LIMIT 1
         """,
@@ -1209,6 +1221,8 @@ def crear_pedido():
     id_sucursal = data.get("id_sucursal")
     zona_destino = data.get("zona")
     direccion_pedido = data.get("direccion")
+    lat_pedido = data.get("lat")
+    lng_pedido = data.get("lng")
     detalles = data.get("detalles", [])
 
     if not id_sucursal:
@@ -1216,10 +1230,10 @@ def crear_pedido():
 
     cursor = mysql.connection.cursor()
 
-    # 1. Obtener la dirección y la zona por defecto del cliente si no se especifica otra
+    # 1. Obtener la dirección, zona y ubicación por defecto del cliente si no se especifica otra
     cursor.execute(
         """
-        SELECT p.direccion, c.zona FROM persona p
+        SELECT p.direccion, c.zona, c.lat, c.lng FROM persona p
         JOIN cliente c ON c.ci_cliente = p.ci
         WHERE p.ci = %s
         """,
@@ -1233,6 +1247,10 @@ def crear_pedido():
 
     if not zona_destino or str(zona_destino).strip() == "":
         zona_destino = cliente_info.get("zona")
+
+    if lat_pedido is None or lng_pedido is None:
+        lat_pedido = cliente_info.get("lat")
+        lng_pedido = cliente_info.get("lng")
 
     # 2. Buscar la tarifa y el costo según la zona de destino
     id_tarifa = 1
@@ -1252,12 +1270,20 @@ def crear_pedido():
     #    para que cualquier repartidor lo acepte desde "Entregar Pedido"
     cursor.execute(
         """
-        INSERT INTO pedido (fecha, estado_pedido, total, ci_cliente, id_tarifa, direccion)
-        VALUES (NOW(), 'Pendiente', %s, %s, %s, %s)
+        INSERT INTO pedido (fecha, estado_pedido, total, ci_cliente, id_tarifa, direccion, lat, lng)
+        VALUES (NOW(), 'Pendiente', %s, %s, %s, %s, %s, %s)
         """,
-        (total_final, ci_cliente, id_tarifa, direccion_pedido),
+        (total_final, ci_cliente, id_tarifa, direccion_pedido, lat_pedido, lng_pedido),
     )
     id_pedido = cursor.lastrowid
+
+    # Recordar este punto como el "último usado" del cliente, para prellenar
+    # el selector de ubicación la próxima vez que haga un pedido.
+    if data.get("lat") is not None and data.get("lng") is not None:
+        cursor.execute(
+            "UPDATE cliente SET lat = %s, lng = %s WHERE ci_cliente = %s",
+            (data.get("lat"), data.get("lng"), ci_cliente),
+        )
 
     # 5. Insertar los detalles del pedido (ajustado exactamente a las columnas que tiene tu tabla detalle_pedido)
     for item in detalles:
