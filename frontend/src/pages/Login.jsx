@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Mail, Lock, Eye, EyeOff, Truck, ShieldCheck, Clock, Store } from 'lucide-react';
+import { Package, Mail, Lock, Eye, EyeOff, Truck, ShieldCheck, Clock, Store, Navigation } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 
@@ -21,6 +21,7 @@ const initialRegistro = {
   direccion: '',
   contrasena: '',
   nombre_negocio: '',
+  zona: '',
 };
 
 const inputClass =
@@ -48,8 +49,16 @@ export default function Login() {
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [tarifas, setTarifas] = useState([]);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    api
+      .get('/api/tarifas')
+      .then(setTarifas)
+      .catch(() => setTarifas([]));
+  }, []);
 
   function cambiarModo(nuevoModo) {
     setModo(nuevoModo);
@@ -313,9 +322,29 @@ export default function Login() {
                   type="text"
                   value={registro.direccion}
                   onChange={(e) => updateRegistro('direccion', e.target.value)}
+                  placeholder="Dirección tal cual aparece en Google Maps"
                   className={plainInputClass}
                 />
               </div>
+              {registro.rol === 'cliente' && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Zona</label>
+                  <Field icon={Navigation}>
+                    <select
+                      value={registro.zona}
+                      onChange={(e) => updateRegistro('zona', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Seleccioná tu zona</option>
+                      {tarifas.map((t) => (
+                        <option key={t.id_tarifa} value={t.zona}>
+                          {t.zona}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Contraseña</label>
                 <Field icon={Lock}>

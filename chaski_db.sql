@@ -23,6 +23,10 @@ CREATE TABLE cliente (
     ci_cliente INT PRIMARY KEY,
     nro_cliente INT NOT NULL AUTO_INCREMENT UNIQUE,
     contrasena VARCHAR(100) NOT NULL,
+    -- Zona de la dirección del cliente (debe coincidir con alguna fila de tarifa.zona);
+    -- se usa para calcular el costo extra de envío, que luego pasa íntegro como
+    -- comisión extra al repartidor que entrega el pedido.
+    zona VARCHAR(100) DEFAULT NULL,
     FOREIGN KEY (ci_cliente) REFERENCES persona(ci)
 );
 
@@ -108,6 +112,7 @@ CREATE TABLE pedido (
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     estado_pedido VARCHAR(30) DEFAULT 'Pendiente',
     token VARCHAR(5),
+    direccion VARCHAR(200),
     total DECIMAL(10,2) NOT NULL,
     ci_cliente INT NOT NULL,
     ci_repartidor INT,
@@ -181,7 +186,12 @@ INSERT INTO producto (nombre, descripcion, precio_unitario, stock_producto) VALU
 
 INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (1, 1), (1, 2);
 
-INSERT INTO tarifa (zona, costo) VALUES ('Centro', 10.00);
+INSERT INTO tarifa (zona, costo) VALUES
+('Centro', 10.00),
+('Norte', 12.00),
+('Sur', 15.00),
+('Equipetrol', 8.00),
+('Las Palmas', 14.00);
 
 -- ==========================================
 -- Negocios adicionales de prueba (para probar el flujo Negocios -> Sucursales)

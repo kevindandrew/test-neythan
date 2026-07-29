@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShoppingCart,
@@ -8,12 +8,14 @@ import {
   Trash2,
   Store,
   MapPin,
+  Navigation,
   CheckCircle2,
   ArrowLeft,
 } from 'lucide-react';
 import { useCart } from '../cart/CartContext';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
+import { imagenProducto } from '../utils/placeholderImage';
 
 export default function CarritoFlotante() {
   const auth = useAuth();
@@ -21,16 +23,32 @@ export default function CarritoFlotante() {
   const [abierto, setAbierto] = useState(false);
   const [vista, setVista] = useState('carrito'); // 'carrito' | 'checkout' | 'confirmado'
   const [direccion, setDireccion] = useState('');
+  const [tarifas, setTarifas] = useState([]);
+  const [zonaId, setZonaId] = useState('');
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState('');
   const [pedidosCreados, setPedidosCreados] = useState([]);
 
+  useEffect(() => {
+    api
+      .get('/api/tarifas')
+      .then(setTarifas)
+      .catch(() => setTarifas([]));
+  }, []);
+
   if (!auth || auth.rol !== 'cliente' || !cart) return null;
+
+  const zonaSeleccionada = tarifas.find((t) => String(t.id_tarifa) === String(zonaId));
+  const costoEnvio = zonaSeleccionada ? Number(zonaSeleccionada.costo) : 0;
 
   function abrir() {
     setError('');
     setVista('carrito');
     setDireccion(auth.usuario?.direccion || '');
+    const zonaCliente = tarifas.find(
+      (t) => t.zona?.toLowerCase() === auth.usuario?.zona?.toLowerCase()
+    );
+    setZonaId(String((zonaCliente || tarifas[0])?.id_tarifa || ''));
     setAbierto(true);
   }
 
@@ -56,6 +74,7 @@ export default function CarritoFlotante() {
           id_sucursal: grupo.id_sucursal,
           total: totalGrupo,
           direccion,
+          zona: zonaSeleccionada?.zona,
           detalles,
         });
         creados.push({
@@ -153,18 +172,37 @@ export default function CarritoFlotante() {
                 )}
 
                 <div className="overflow-y-auto -mx-1 px-1 space-y-4">
-                  <div>
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
-                      <MapPin size={14} />
-                      Dirección de entrega
-                    </label>
-                    <input
-                      type="text"
-                      value={direccion}
-                      onChange={(e) => setDireccion(e.target.value)}
-                      placeholder="Ej: Av. Siempre Viva 123"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
+                        <MapPin size={14} />
+                        Dirección de entrega
+                      </label>
+                      <input
+                        type="text"
+                        value={direccion}
+                        onChange={(e) => setDireccion(e.target.value)}
+                        placeholder="Dirección tal cual aparece en Google Maps"
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1.5">
+                        <Navigation size={14} />
+                        Zona
+                      </label>
+                      <select
+                        value={zonaId}
+                        onChange={(e) => setZonaId(e.target.value)}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        {tarifas.map((t) => (
+                          <option key={t.id_tarifa} value={t.id_tarifa}>
+                            {t.zona} (Bs. {Number(t.costo).toFixed(2)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
@@ -182,16 +220,19 @@ export default function CarritoFlotante() {
                             <Store size={14} className="text-indigo-600" />
                             {grupo.nombre_negocio} · {grupo.sucursal_nombre}
                           </p>
-                          <div className="space-y-1 mb-2">
+                          <div className="space-y-1.5 mb-2">
                             {grupo.items.map((i) => (
-                              <div
-                                key={i.id_producto}
-                                className="flex justify-between text-sm text-slate-600"
-                              >
-                                <span className="truncate">
+                              <div key={i.id_producto} className="flex items-center gap-2">
+                                <img
+                                  src={imagenProducto(i.id_producto)}
+                                  alt={i.nombre_producto}
+                                  className="h-8 w-8 rounded-md object-cover shrink-0"
+                                  loading="lazy"
+                                />
+                                <span className="flex-1 truncate text-sm text-slate-600">
                                   {i.nombre_producto} × {i.cantidad}
                                 </span>
-                                <span className="shrink-0">
+                                <span className="shrink-0 text-sm text-slate-600">
                                   Bs. {(parseFloat(i.precio) * i.cantidad).toFixed(2)}
                                 </span>
                               </div>
@@ -199,7 +240,7 @@ export default function CarritoFlotante() {
                           </div>
                           <div className="flex justify-between text-sm font-medium text-slate-700 border-t border-slate-100 pt-2">
                             <span>Subtotal + envío</span>
-                            <span>Bs. {(subtotal + 10).toFixed(2)}</span>
+                            <span>Bs. {(subtotal + costoEnvio).toFixed(2)}</span>
                           </div>
                         </div>
                       );
@@ -213,12 +254,12 @@ export default function CarritoFlotante() {
                       Total ({cart.grupos.length} {cart.grupos.length === 1 ? 'tienda' : 'tiendas'})
                     </span>
                     <span className="text-lg font-semibold text-indigo-600">
-                      Bs. {(cart.totalCarrito + cart.grupos.length * 10).toFixed(2)}
+                      Bs. {(cart.totalCarrito + cart.grupos.length * costoEnvio).toFixed(2)}
                     </span>
                   </div>
                   <button
                     onClick={confirmarCompra}
-                    disabled={confirmando || !direccion.trim()}
+                    disabled={confirmando || !direccion.trim() || !zonaId}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition"
                   >
                     {confirmando ? 'Confirmando...' : 'Confirmar compra'}
@@ -256,7 +297,13 @@ export default function CarritoFlotante() {
                         <div className="space-y-2">
                           {grupo.items.map((i) => (
                             <div key={i.id_producto} className="flex items-center justify-between gap-2">
-                              <div className="min-w-0">
+                              <img
+                                src={imagenProducto(i.id_producto)}
+                                alt={i.nombre_producto}
+                                className="h-10 w-10 rounded-lg object-cover shrink-0"
+                                loading="lazy"
+                              />
+                              <div className="min-w-0 flex-1">
                                 <p className="text-sm text-slate-700 truncate">{i.nombre_producto}</p>
                                 <p className="text-xs text-slate-400">Bs. {i.precio} c/u</p>
                               </div>

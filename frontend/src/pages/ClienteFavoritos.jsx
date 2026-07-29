@@ -44,7 +44,7 @@ export default function ClienteFavoritos() {
 
   function pedirDeNuevo(producto) {
     navigate(
-      `/cliente/panel?sucursal=${producto.id_sucursal}&nombre=${encodeURIComponent(producto.sucursal_nombre)}&negocio=${encodeURIComponent(producto.nombre_negocio)}`
+      `/cliente/panel?sucursal=${producto.id_sucursal}&nombre=${encodeURIComponent(producto.sucursal_nombre)}&negocio=${encodeURIComponent(producto.nombre_negocio)}&producto=${producto.id_producto}`
     );
   }
 

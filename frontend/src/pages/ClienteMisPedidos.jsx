@@ -1,43 +1,160 @@
 import { useEffect, useState } from 'react';
+import {
+  Hourglass,
+  PackageCheck,
+  ShoppingCart,
+  KeyRound,
+  X,
+  MapPin,
+  Navigation,
+  Calendar,
+  FileDown,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Hourglass, PackageCheck, ShoppingCart, KeyRound } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
 import EstadoBadge from '../components/EstadoBadge';
 import { CLIENTE_NAV_ITEMS } from './ClientePanel';
 
-function TarjetaPedido({ pedido, finalizado }) {
+function TarjetaPedido({ pedido, onClick }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h6 className="font-medium text-slate-800 mb-1">Pedido #{pedido.id_pedido}</h6>
-          <p className="text-xs text-slate-500 mb-1">
-            Total: <span className="font-semibold">Bs. {pedido.total}</span>
-          </p>
-          <EstadoBadge estado={pedido.estado} />
-        </div>
-        {finalizado && (
-          <a
-            href={`/factura/${pedido.id_pedido}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm border border-indigo-600 text-indigo-600 rounded-lg px-3 py-1.5 hover:bg-indigo-50 transition"
-          >
-            Ver / Descargar Factura
-          </a>
-        )}
+    <button
+      onClick={onClick}
+      className="w-full text-left rounded-xl border border-slate-200 bg-slate-50 hover:border-indigo-300 hover:shadow-md transition p-4"
+    >
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <h6 className="font-medium text-slate-800">Pedido #{pedido.id_pedido}</h6>
+        <EstadoBadge estado={pedido.estado} />
       </div>
-
-      {!finalizado && pedido.estado === 'En Camino' && pedido.token && (
-        <div className="mt-3 flex items-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-2">
-          <KeyRound size={16} className="text-indigo-600 shrink-0" />
-          <p className="text-sm text-indigo-800">
-            Tu código de entrega es <span className="font-bold tracking-widest">{pedido.token}</span>
-            . Dáselo al repartidor cuando llegue tu pedido para confirmar la entrega.
-          </p>
-        </div>
+      <p className="text-sm text-slate-600">
+        Total: <span className="font-semibold">Bs. {pedido.total}</span>
+      </p>
+      {pedido.estado === 'En Camino' && pedido.token && (
+        <p className="flex items-center gap-1.5 text-xs text-indigo-600 mt-2">
+          <KeyRound size={13} />
+          Código de entrega disponible
+        </p>
       )}
+    </button>
+  );
+}
+
+function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
+  const [detalle, setDetalle] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let activo = true;
+    async function cargar() {
+      setCargando(true);
+      setError('');
+      try {
+        const data = await api.get(`/api/cliente/pedido/${idPedido}`);
+        if (activo) setDetalle(data);
+      } catch (err) {
+        if (activo) setError(err.message || 'No se pudo cargar el detalle del pedido.');
+      } finally {
+        if (activo) setCargando(false);
+      }
+    }
+    cargar();
+    return () => {
+      activo = false;
+    };
+  }, [idPedido]);
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-slate-800">Pedido #{idPedido}</h3>
+          <button onClick={onCerrar} aria-label="Cerrar" className="text-slate-400 hover:text-slate-600">
+            <X size={20} />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-3 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
+        )}
+
+        {cargando ? (
+          <p className="text-sm text-slate-400">Cargando...</p>
+        ) : detalle ? (
+          <div className="overflow-y-auto -mx-1 px-1 space-y-4">
+            <div className="flex items-center justify-between">
+              <EstadoBadge estado={detalle.estado} />
+              <span className="text-lg font-semibold text-indigo-600">
+                Bs. {Number(detalle.total).toFixed(2)}
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-sm text-slate-600">
+              <p className="flex items-center gap-2">
+                <Calendar size={14} className="text-slate-400" />
+                {new Date(detalle.fecha).toLocaleString('es-BO', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+              {detalle.direccion && (
+                <p className="flex items-center gap-2">
+                  <MapPin size={14} className="text-slate-400" />
+                  {detalle.direccion}
+                </p>
+              )}
+              {detalle.zona && (
+                <p className="flex items-center gap-2">
+                  <Navigation size={14} className="text-slate-400" />
+                  Zona {detalle.zona}
+                </p>
+              )}
+            </div>
+
+            {detalle.estado === 'En Camino' && detalle.token && (
+              <div className="flex items-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-2">
+                <KeyRound size={16} className="text-indigo-600 shrink-0" />
+                <p className="text-sm text-indigo-800">
+                  Tu código de entrega es{' '}
+                  <span className="font-bold tracking-widest">{detalle.token}</span>. Dáselo al
+                  repartidor cuando llegue tu pedido.
+                </p>
+              </div>
+            )}
+
+            <div className="border-t border-slate-200 pt-3">
+              <p className="text-sm font-medium text-slate-700 mb-2">Productos</p>
+              <div className="space-y-1">
+                {(detalle.productos || []).map((prod, idx) => (
+                  <div key={idx} className="flex justify-between text-sm text-slate-600">
+                    <span className="truncate">
+                      {prod.nombre} × {prod.cantidad}
+                    </span>
+                    <span className="shrink-0">
+                      Bs. {(parseFloat(prod.precio_unitario) * prod.cantidad).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {finalizado && (
+              <a
+                href={`/factura/${detalle.id_pedido}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 border border-indigo-600 text-indigo-600 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-indigo-50 transition"
+              >
+                <FileDown size={16} />
+                Descargar Factura
+              </a>
+            )}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -46,6 +163,7 @@ export default function ClienteMisPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [cargandoPedidos, setCargandoPedidos] = useState(true);
   const [error, setError] = useState('');
+  const [pedidoAbierto, setPedidoAbierto] = useState(null); // { id, finalizado }
 
   useEffect(() => {
     cargarMisPedidos();
@@ -97,9 +215,13 @@ export default function ClienteMisPedidos() {
               {pedidosEnCurso.length === 0 ? (
                 <p className="text-sm text-slate-400">No tenés pedidos en curso.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pedidosEnCurso.map((p) => (
-                    <TarjetaPedido key={p.id_pedido} pedido={p} finalizado={false} />
+                    <TarjetaPedido
+                      key={p.id_pedido}
+                      pedido={p}
+                      onClick={() => setPedidoAbierto({ id: p.id_pedido, finalizado: false })}
+                    />
                   ))}
                 </div>
               )}
@@ -113,9 +235,13 @@ export default function ClienteMisPedidos() {
               {pedidosRecibidos.length === 0 ? (
                 <p className="text-sm text-slate-400">Todavía no recibiste ningún pedido.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pedidosRecibidos.map((p) => (
-                    <TarjetaPedido key={p.id_pedido} pedido={p} finalizado />
+                    <TarjetaPedido
+                      key={p.id_pedido}
+                      pedido={p}
+                      onClick={() => setPedidoAbierto({ id: p.id_pedido, finalizado: true })}
+                    />
                   ))}
                 </div>
               )}
@@ -123,6 +249,14 @@ export default function ClienteMisPedidos() {
           </>
         )}
       </div>
+
+      {pedidoAbierto && (
+        <ModalDetallePedido
+          idPedido={pedidoAbierto.id}
+          finalizado={pedidoAbierto.finalizado}
+          onCerrar={() => setPedidoAbierto(null)}
+        />
+      )}
     </AppShell>
   );
 }

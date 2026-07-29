@@ -126,6 +126,7 @@ def login():
                     "nombre": cliente["nombre"],
                     "correo": cliente["correo"],
                     "direccion": cliente["direccion"],
+                    "zona": cliente["zona"],
                 },
             }),
             200,
@@ -249,6 +250,19 @@ def login():
 
 
 # ==========================================
+# ZONAS / TARIFAS (público: se usa desde el registro, antes de tener sesión)
+# ==========================================
+
+@app.route("/api/tarifas", methods=["GET"])
+def listar_tarifas():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT id_tarifa, zona, costo FROM tarifa ORDER BY zona")
+    tarifas = cursor.fetchall()
+    cursor.close()
+    return jsonify(tarifas), 200
+
+
+# ==========================================
 # ENDPOINT DE REGISTRO UNIFICADO
 # ==========================================
 
@@ -288,9 +302,10 @@ def registro():
     )
 
     if rol == "cliente":
+        zona = data.get("zona")
         cursor.execute(
-            "INSERT INTO cliente (ci_cliente, contrasena) VALUES (%s, %s)",
-            (ci, contrasena),
+            "INSERT INTO cliente (ci_cliente, contrasena, zona) VALUES (%s, %s, %s)",
+            (ci, contrasena, zona),
         )
     elif rol == "repartidor":
         nro_licencia = data.get("nro_licencia")
@@ -746,12 +761,15 @@ def obtener_pedidos_repartidor():
     )
     rep_data = cursor.fetchone()
 
-    # 2. Obtener todos los pedidos asignados
+    # 2. Obtener todos los pedidos asignados (con el costo de envío de su zona,
+    #    que se paga íntegro al repartidor como comisión extra)
     cursor.execute(
         """
-        SELECT p.id_pedido, p.fecha, p.estado_pedido, p.total
+        SELECT p.id_pedido, p.fecha, p.estado_pedido, p.total,
+               COALESCE(t.costo, 0) AS costo_envio
         FROM pedido p
         JOIN repartidor r ON p.ci_repartidor = r.ci_repartidor
+        LEFT JOIN tarifa t ON p.id_tarifa = t.id_tarifa
         WHERE r.nro_repartidor = %s
         """,
         (nro_repartidor,),
@@ -761,7 +779,12 @@ def obtener_pedidos_repartidor():
 
     for p in pedidos:
         entregado = str(p.get("estado_pedido", "")).lower() in ["entregado", "terminado"]
-        p["comision"] = round(float(p["total"]) * COMISION_PORCENTAJE, 2) if entregado else 0.0
+        costo_envio = float(p.pop("costo_envio", 0) or 0)
+        if entregado:
+            subtotal_productos = float(p["total"]) - costo_envio
+            p["comision"] = round(subtotal_productos * COMISION_PORCENTAJE, 2) + round(costo_envio, 2)
+        else:
+            p["comision"] = 0.0
 
     # 3. Validar si tiene algún pedido activo
     estados_activos = ["pendiente", "en camino", "confirmado"]
@@ -1143,13 +1166,23 @@ def crear_pedido():
 
     cursor = mysql.connection.cursor()
 
-    # 1. Obtener la dirección por defecto del usuario si no se especifica otra
-    cursor.execute("SELECT direccion FROM persona WHERE ci = %s", (ci_cliente,))
-    persona_info = cursor.fetchone()
-    direccion_defecto = persona_info["direccion"] if persona_info and persona_info["direccion"] else "Sin dirección registrada"
+    # 1. Obtener la dirección y la zona por defecto del cliente si no se especifica otra
+    cursor.execute(
+        """
+        SELECT p.direccion, c.zona FROM persona p
+        JOIN cliente c ON c.ci_cliente = p.ci
+        WHERE p.ci = %s
+        """,
+        (ci_cliente,),
+    )
+    cliente_info = cursor.fetchone() or {}
+    direccion_defecto = cliente_info.get("direccion") or "Sin dirección registrada"
 
     if not direccion_pedido or str(direccion_pedido).strip() == "":
         direccion_pedido = direccion_defecto
+
+    if not zona_destino or str(zona_destino).strip() == "":
+        zona_destino = cliente_info.get("zona")
 
     # 2. Buscar la tarifa y el costo según la zona de destino
     id_tarifa = 1
@@ -1169,10 +1202,10 @@ def crear_pedido():
     #    para que cualquier repartidor lo acepte desde "Entregar Pedido"
     cursor.execute(
         """
-        INSERT INTO pedido (fecha, estado_pedido, total, ci_cliente, id_tarifa)
-        VALUES (NOW(), 'Pendiente', %s, %s, %s)
+        INSERT INTO pedido (fecha, estado_pedido, total, ci_cliente, id_tarifa, direccion)
+        VALUES (NOW(), 'Pendiente', %s, %s, %s, %s)
         """,
-        (total_final, ci_cliente, id_tarifa),
+        (total_final, ci_cliente, id_tarifa, direccion_pedido),
     )
     id_pedido = cursor.lastrowid
 
@@ -1351,6 +1384,50 @@ def listar_pedidos_cliente():
     pedidos = cursor.fetchall()
     cursor.close()
     return jsonify(pedidos), 200
+
+
+@app.route("/api/cliente/pedido/<int:id_pedido>", methods=["GET"])
+@jwt_required()
+def detalle_pedido_cliente(id_pedido):
+    claims = get_jwt()
+    if claims.get("rol") != "cliente":
+        return jsonify({"error": "Acceso denegado"}), 403
+
+    ci_cliente = claims.get("ci_cliente")
+    cursor = mysql.connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT p.id_pedido, p.fecha, p.estado_pedido AS estado, p.total, p.token,
+               p.direccion, t.zona
+        FROM pedido p
+        LEFT JOIN tarifa t ON p.id_tarifa = t.id_tarifa
+        WHERE p.id_pedido = %s AND p.ci_cliente = %s
+        """,
+        (id_pedido, ci_cliente),
+    )
+    pedido = cursor.fetchone()
+
+    if not pedido:
+        cursor.close()
+        return jsonify({"error": "Pedido no encontrado"}), 404
+
+    cursor.execute(
+        """
+        SELECT dp.cantidad, pr.id_producto, pr.nombre, pr.precio_unitario,
+               s.nombre AS sucursal_nombre, n.nombre_negocio
+        FROM detalle_pedido dp
+        JOIN producto pr ON dp.id_producto = pr.id_producto
+        JOIN sucursal s ON dp.id_sucursal = s.id_sucursal
+        JOIN negocio n ON s.id_negocio = n.id_negocio
+        WHERE dp.id_pedido = %s
+        """,
+        (id_pedido,),
+    )
+    pedido["productos"] = cursor.fetchall()
+    cursor.close()
+
+    return jsonify(pedido), 200
 
 
 @app.route("/api/productos", methods=["GET"])
@@ -1716,7 +1793,7 @@ def admin_listar_clientes():
     cursor = mysql.connection.cursor()
     cursor.execute(
         """
-        SELECT c.ci_cliente, c.nro_cliente, p.nombre, p.apepaterno, p.telefono, p.correo, p.direccion
+        SELECT c.ci_cliente, c.nro_cliente, c.zona, p.nombre, p.apepaterno, p.telefono, p.correo, p.direccion
         FROM cliente c
         JOIN persona p ON c.ci_cliente = p.ci
         ORDER BY p.nombre
@@ -1742,6 +1819,7 @@ def admin_crear_cliente():
     correo = data.get("correo")
     direccion = data.get("direccion")
     contrasena = data.get("contrasena")
+    zona = data.get("zona")
 
     if not ci or not nombre or not correo or not contrasena:
         return jsonify({"error": "Faltan datos obligatorios"}), 400
@@ -1757,8 +1835,8 @@ def admin_crear_cliente():
         (ci, nombre, apepaterno, telefono, correo, direccion),
     )
     cursor.execute(
-        "INSERT INTO cliente (ci_cliente, contrasena) VALUES (%s, %s)",
-        (ci, contrasena),
+        "INSERT INTO cliente (ci_cliente, contrasena, zona) VALUES (%s, %s, %s)",
+        (ci, contrasena, zona),
     )
     mysql.connection.commit()
     cursor.close()
@@ -1779,6 +1857,7 @@ def admin_editar_cliente(ci):
     correo = data.get("correo")
     direccion = data.get("direccion")
     contrasena = data.get("contrasena")
+    zona = data.get("zona")
 
     if not nombre or not correo:
         return jsonify({"error": "Faltan datos obligatorios"}), 400
@@ -1788,6 +1867,7 @@ def admin_editar_cliente(ci):
         "UPDATE persona SET nombre = %s, apepaterno = %s, telefono = %s, correo = %s, direccion = %s WHERE ci = %s",
         (nombre, apepaterno, telefono, correo, direccion, ci),
     )
+    cursor.execute("UPDATE cliente SET zona = %s WHERE ci_cliente = %s", (zona, ci))
     if contrasena:
         cursor.execute(
             "UPDATE cliente SET contrasena = %s WHERE ci_cliente = %s", (contrasena, ci)

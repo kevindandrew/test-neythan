@@ -12,6 +12,7 @@ const FORM_INICIAL = {
   correo: '',
   direccion: '',
   contrasena: '',
+  zona: '',
 };
 
 export default function AdminClientes() {
@@ -19,6 +20,7 @@ export default function AdminClientes() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [tarifas, setTarifas] = useState([]);
 
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
   const [clienteEditando, setClienteEditando] = useState(null);
@@ -32,6 +34,10 @@ export default function AdminClientes() {
 
   useEffect(() => {
     cargarClientes();
+    api
+      .get('/api/tarifas')
+      .then(setTarifas)
+      .catch(() => setTarifas([]));
   }, []);
 
   async function cargarClientes() {
@@ -71,6 +77,7 @@ export default function AdminClientes() {
       correo: cliente.correo || '',
       direccion: cliente.direccion || '',
       contrasena: '',
+      zona: cliente.zona || '',
     });
     setErrorForm('');
     setClienteEditando(cliente);
@@ -94,6 +101,7 @@ export default function AdminClientes() {
         correo: form.correo,
         direccion: form.direccion,
         contrasena: form.contrasena,
+        zona: form.zona,
       });
       setModalCrearAbierto(false);
       setForm(FORM_INICIAL);
@@ -118,6 +126,7 @@ export default function AdminClientes() {
         correo: form.correo,
         direccion: form.direccion,
         contrasena: form.contrasena,
+        zona: form.zona,
       });
       setClienteEditando(null);
       setMensaje('Cliente actualizado con éxito.');
@@ -196,6 +205,7 @@ export default function AdminClientes() {
                     <th className="py-2 pr-4 font-medium">Correo</th>
                     <th className="py-2 pr-4 font-medium">Teléfono</th>
                     <th className="py-2 pr-4 font-medium">Dirección</th>
+                    <th className="py-2 pr-4 font-medium">Zona</th>
                     <th className="py-2 pr-4 font-medium">Acciones</th>
                   </tr>
                 </thead>
@@ -209,6 +219,7 @@ export default function AdminClientes() {
                       <td className="py-2 pr-4">{c.correo}</td>
                       <td className="py-2 pr-4">{c.telefono || '-'}</td>
                       <td className="py-2 pr-4">{c.direccion || '-'}</td>
+                      <td className="py-2 pr-4">{c.zona || '-'}</td>
                       <td className="py-2 pr-4">
                         <div className="flex gap-2">
                           <button
@@ -315,8 +326,24 @@ export default function AdminClientes() {
                   type="text"
                   value={form.direccion}
                   onChange={(e) => updateForm('direccion', e.target.value)}
+                  placeholder="Dirección tal cual aparece en Google Maps"
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Zona</label>
+                <select
+                  value={form.zona}
+                  onChange={(e) => updateForm('zona', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Sin zona</option>
+                  {tarifas.map((t) => (
+                    <option key={t.id_tarifa} value={t.zona}>
+                      {t.zona}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
@@ -419,8 +446,24 @@ export default function AdminClientes() {
                   type="text"
                   value={form.direccion}
                   onChange={(e) => updateForm('direccion', e.target.value)}
+                  placeholder="Dirección tal cual aparece en Google Maps"
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Zona</label>
+                <select
+                  value={form.zona}
+                  onChange={(e) => updateForm('zona', e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Sin zona</option>
+                  {tarifas.map((t) => (
+                    <option key={t.id_tarifa} value={t.zona}>
+                      {t.zona}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
