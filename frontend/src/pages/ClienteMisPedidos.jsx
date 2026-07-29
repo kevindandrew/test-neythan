@@ -14,13 +14,14 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
 import EstadoBadge from '../components/EstadoBadge';
+import { Skeleton, SkeletonCardGrid } from '../components/Skeleton';
 import { CLIENTE_NAV_ITEMS } from './ClientePanel';
 
 function TarjetaPedido({ pedido, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-xl border border-slate-200 bg-slate-50 hover:border-indigo-300 hover:shadow-md transition p-4"
+      className="w-full text-left rounded-xl border border-slate-200 bg-slate-50 hover:border-red-300 hover:shadow-md transition p-4"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <h6 className="font-medium text-slate-800">Pedido #{pedido.id_pedido}</h6>
@@ -30,7 +31,7 @@ function TarjetaPedido({ pedido, onClick }) {
         Total: <span className="font-semibold">Bs. {pedido.total}</span>
       </p>
       {pedido.estado === 'En Camino' && pedido.token && (
-        <p className="flex items-center gap-1.5 text-xs text-indigo-600 mt-2">
+        <p className="flex items-center gap-1.5 text-xs text-red-600 mt-2">
           <KeyRound size={13} />
           Código de entrega disponible
         </p>
@@ -79,12 +80,17 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
         )}
 
         {cargando ? (
-          <p className="text-sm text-slate-400">Cargando...</p>
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
         ) : detalle ? (
           <div className="overflow-y-auto -mx-1 px-1 space-y-4">
             <div className="flex items-center justify-between">
               <EstadoBadge estado={detalle.estado} />
-              <span className="text-lg font-semibold text-indigo-600">
+              <span className="text-lg font-semibold text-red-600">
                 Bs. {Number(detalle.total).toFixed(2)}
               </span>
             </div>
@@ -115,9 +121,9 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
             </div>
 
             {detalle.estado === 'En Camino' && detalle.token && (
-              <div className="flex items-center gap-2 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-2">
-                <KeyRound size={16} className="text-indigo-600 shrink-0" />
-                <p className="text-sm text-indigo-800">
+              <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+                <KeyRound size={16} className="text-red-600 shrink-0" />
+                <p className="text-sm text-red-800">
                   Tu código de entrega es{' '}
                   <span className="font-bold tracking-widest">{detalle.token}</span>. Dáselo al
                   repartidor cuando llegue tu pedido.
@@ -146,7 +152,7 @@ function ModalDetallePedido({ idPedido, finalizado, onCerrar }) {
                 href={`/factura/${detalle.id_pedido}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 border border-indigo-600 text-indigo-600 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-indigo-50 transition"
+                className="flex items-center justify-center gap-2 border border-red-600 text-red-600 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-red-50 transition"
               >
                 <FileDown size={16} />
                 Descargar Factura
@@ -193,13 +199,29 @@ export default function ClienteMisPedidos() {
         )}
 
         {cargandoPedidos ? (
-          <p className="text-sm text-slate-400">Cargando tus pedidos...</p>
+          <>
+            <section className="bg-white rounded-2xl shadow-lg p-6">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+                <Hourglass size={18} className="text-red-600" />
+                En Curso
+              </h5>
+              <SkeletonCardGrid count={3} className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
+            </section>
+
+            <section className="bg-white rounded-2xl shadow-lg p-6">
+              <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
+                <PackageCheck size={18} className="text-red-600" />
+                Recibidos
+              </h5>
+              <SkeletonCardGrid count={3} className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
+            </section>
+          </>
         ) : pedidos.length === 0 ? (
           <section className="bg-white rounded-2xl shadow-lg p-6 text-center py-8">
             <p className="text-sm text-slate-400 mb-4">Aún no has realizado ningún pedido.</p>
             <Link
               to="/cliente/panel"
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
             >
               <ShoppingCart size={16} />
               Hacer mi primer pedido
@@ -209,7 +231,7 @@ export default function ClienteMisPedidos() {
           <>
             <section className="bg-white rounded-2xl shadow-lg p-6">
               <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-                <Hourglass size={18} className="text-indigo-600" />
+                <Hourglass size={18} className="text-red-600" />
                 En Curso
               </h5>
               {pedidosEnCurso.length === 0 ? (
@@ -229,7 +251,7 @@ export default function ClienteMisPedidos() {
 
             <section className="bg-white rounded-2xl shadow-lg p-6">
               <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-                <PackageCheck size={18} className="text-indigo-600" />
+                <PackageCheck size={18} className="text-red-600" />
                 Recibidos
               </h5>
               {pedidosRecibidos.length === 0 ? (

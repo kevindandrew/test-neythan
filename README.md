@@ -4,7 +4,7 @@ App de delivery con tres roles: **cliente**, **dueño de negocio** y **repartido
 
 ## Stack
 
-- **Backend**: Python + Flask + MySQL (JWT para autenticación)
+- **Backend**: Python + Flask + MySQL (JWT para autenticación, contraseñas hasheadas con bcrypt)
 - **Frontend**: React + Vite + Tailwind CSS
 - El backend expone una API en `http://localhost:5000` y el frontend corre aparte en `http://localhost:5173`. Son dos servidores separados que corren al mismo tiempo.
 
@@ -58,16 +58,25 @@ Si tenés Workbench instalado, es más simple importar el archivo directo desde 
 
 > Nota: si usás la Opción A por línea de comandos y tu MySQL tiene contraseña para `root`, agregá `-p` al comando y te la va a pedir.
 
-### Configurá la conexión (si hace falta)
+### Configurá las variables de entorno
 
-Revisá `app.py` (líneas ~20-24): por defecto asume usuario `root` **sin contraseña** en `localhost`. Si tu MySQL tiene otra configuración (otra contraseña, otro usuario), editá esas líneas:
+El backend lee su configuración (conexión a MySQL, clave de JWT, puerto) desde un archivo `.env` en la raíz del proyecto. Ese archivo **no se sube a git** porque tiene datos sensibles/locales — cada uno crea el suyo copiando la plantilla:
 
-   ```python
-   app.config["MYSQL_HOST"] = "localhost"
-   app.config["MYSQL_USER"] = "root"
-   app.config["MYSQL_PASSWORD"] = ""  # poné tu contraseña acá si tenés una
-   app.config["MYSQL_DB"] = "chaskiDB"
-   ```
+```bash
+cp .env.example .env
+```
+
+Por defecto ya funciona con XAMPP (usuario `root`, sin contraseña, `localhost`). Si tu MySQL tiene otra configuración, editá `.env`:
+
+```
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=       # poné tu contraseña acá si tenés una
+MYSQL_DB=chaskiDB
+JWT_SECRET_KEY=chaski-secret-key-muy-segura
+FLASK_DEBUG=True
+FLASK_PORT=5000
+```
 
 ## 3. Backend (Flask)
 
@@ -130,6 +139,7 @@ Chaski_app/
 ├── app.py                 # Backend Flask (API + rutas)
 ├── chaski_db.sql           # Esquema completo + datos de prueba
 ├── requirements.txt         # Dependencias de Python
+├── .env.example             # Plantilla de variables de entorno (copiarla a .env)
 ├── templates/               # Vistas HTML viejas (ya no se usan, reemplazadas por frontend/)
 └── frontend/                # App React (lo que se usa hoy)
     ├── src/

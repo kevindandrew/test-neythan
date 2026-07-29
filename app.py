@@ -1,5 +1,8 @@
+import os
 import random
 
+import bcrypt
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -10,30 +13,45 @@ from flask_jwt_extended import (
     jwt_required,
 )
 from flask_mysqldb import MySQL
-from werkzeug.security import check_password_hash
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
 # ==========================================
-# CONFIGURACIÓN
+# CONFIGURACIÓN (desde variables de entorno, ver .env / .env.example)
 # ==========================================
 
 # Configuración de la base de datos MySQL
-app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = ""  # Pon tu contraseña de MySQL si la tienes
-app.config["MYSQL_DB"] = "chaskiDB"
+app.config["MYSQL_HOST"] = os.environ.get("MYSQL_HOST", "localhost")
+app.config["MYSQL_USER"] = os.environ.get("MYSQL_USER", "root")
+app.config["MYSQL_PASSWORD"] = os.environ.get("MYSQL_PASSWORD", "")
+app.config["MYSQL_DB"] = os.environ.get("MYSQL_DB", "chaskiDB")
 app.config["MYSQL_CURSORCLASS"] = "DictCursor"
 
 # Configuración de JWT
-app.config["JWT_SECRET_KEY"] = "chaski-secret-key-muy-segura"
+app.config["JWT_SECRET_KEY"] = os.environ.get(
+    "JWT_SECRET_KEY", "chaski-secret-key-muy-segura"
+)
 
 mysql = MySQL(app)
 jwt = JWTManager(app)
 
 # Porcentaje de comisión que gana el repartidor por cada pedido entregado
 COMISION_PORCENTAJE = 0.10
+
+
+def hash_contrasena(contrasena):
+    return bcrypt.hashpw(contrasena.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verificar_contrasena(contrasena, hash_guardado):
+    try:
+        return bcrypt.checkpw(contrasena.encode("utf-8"), hash_guardado.encode("utf-8"))
+    except (ValueError, AttributeError):
+        # hash_guardado no es un hash bcrypt válido (p. ej. dato viejo sin migrar)
+        return False
 
 
 # ==========================================
@@ -103,7 +121,7 @@ def login():
 
     if cliente:
         # Validación única y limpia (comparación directa para texto plano)
-        if cliente["contrasena"] != contrasena:
+        if not verificar_contrasena(contrasena, cliente["contrasena"]):
             cursor.close()
             return jsonify({"error": "Credenciales inválidas"}), 401
 
@@ -144,7 +162,7 @@ def login():
     negocio = cursor.fetchone()
 
     if negocio:
-        if negocio["contrasena"] != contrasena:
+        if not verificar_contrasena(contrasena, negocio["contrasena"]):
             cursor.close()
             return jsonify({"error": "Credenciales inválidas"}), 401
 
@@ -184,7 +202,7 @@ def login():
     repartidor = cursor.fetchone()
 
     if repartidor:
-        if repartidor["contrasena"] != contrasena:
+        if not verificar_contrasena(contrasena, repartidor["contrasena"]):
             cursor.close()
             return jsonify({"error": "Credenciales inválidas"}), 401
 
@@ -222,7 +240,7 @@ def login():
     admin = cursor.fetchone()
 
     if admin:
-        if admin["contrasena"] != contrasena:
+        if not verificar_contrasena(contrasena, admin["contrasena"]):
             cursor.close()
             return jsonify({"error": "Credenciales inválidas"}), 401
 
@@ -288,6 +306,8 @@ def registro():
 
     if rol == "negocio" and not nombre_negocio:
         return jsonify({"error": "Falta el nombre del negocio"}), 400
+
+    contrasena = hash_contrasena(contrasena)
 
     cursor = mysql.connection.cursor()
 
@@ -1866,7 +1886,7 @@ def admin_crear_cliente():
     )
     cursor.execute(
         "INSERT INTO cliente (ci_cliente, contrasena, zona) VALUES (%s, %s, %s)",
-        (ci, contrasena, zona),
+        (ci, hash_contrasena(contrasena), zona),
     )
     mysql.connection.commit()
     cursor.close()
@@ -1900,7 +1920,8 @@ def admin_editar_cliente(ci):
     cursor.execute("UPDATE cliente SET zona = %s WHERE ci_cliente = %s", (zona, ci))
     if contrasena:
         cursor.execute(
-            "UPDATE cliente SET contrasena = %s WHERE ci_cliente = %s", (contrasena, ci)
+            "UPDATE cliente SET contrasena = %s WHERE ci_cliente = %s",
+            (hash_contrasena(contrasena), ci),
         )
     mysql.connection.commit()
     cursor.close()
@@ -1984,7 +2005,7 @@ def admin_crear_repartidor():
     )
     cursor.execute(
         "INSERT INTO repartidor (ci_repartidor, contrasena, nro_licencia) VALUES (%s, %s, %s)",
-        (ci, contrasena, nro_licencia),
+        (ci, hash_contrasena(contrasena), nro_licencia),
     )
     mysql.connection.commit()
     cursor.close()
@@ -2022,7 +2043,8 @@ def admin_editar_repartidor(ci):
     )
     if contrasena:
         cursor.execute(
-            "UPDATE repartidor SET contrasena = %s WHERE ci_repartidor = %s", (contrasena, ci)
+            "UPDATE repartidor SET contrasena = %s WHERE ci_repartidor = %s",
+            (hash_contrasena(contrasena), ci),
         )
     mysql.connection.commit()
     cursor.close()
@@ -2123,7 +2145,7 @@ def admin_crear_negocio():
 
     cursor.execute(
         "INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES (%s, %s, %s, %s)",
-        (nombre_negocio, ci, correo_negocio, contrasena),
+        (nombre_negocio, ci, correo_negocio, hash_contrasena(contrasena)),
     )
     mysql.connection.commit()
     cursor.close()
@@ -2149,7 +2171,7 @@ def admin_editar_negocio(id_negocio):
     if contrasena:
         cursor.execute(
             "UPDATE negocio SET nombre_negocio = %s, correo_negocio = %s, contrasena = %s WHERE id_negocio = %s",
-            (nombre_negocio, correo_negocio, contrasena, id_negocio),
+            (nombre_negocio, correo_negocio, hash_contrasena(contrasena), id_negocio),
         )
     else:
         cursor.execute(
@@ -2326,4 +2348,6 @@ def admin_eliminar_producto(id_producto):
 # ==========================================
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    debug = os.environ.get("FLASK_DEBUG", "True").lower() in ("1", "true", "yes")
+    port = int(os.environ.get("FLASK_PORT", 5000))
+    app.run(debug=debug, port=port)

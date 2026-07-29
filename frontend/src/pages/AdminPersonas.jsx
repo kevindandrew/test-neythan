@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Users, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
+import { SkeletonTableRows } from '../components/Skeleton';
 import { ADMIN_NAV_ITEMS } from './AdminDashboard';
 
 const ROL_BADGE = {
   cliente: 'bg-blue-50 text-blue-700',
   negocio: 'bg-amber-50 text-amber-700',
   repartidor: 'bg-emerald-50 text-emerald-700',
-  admin: 'bg-indigo-50 text-indigo-700',
+  admin: 'bg-red-50 text-red-700',
   'sin rol': 'bg-slate-100 text-slate-600',
 };
 
@@ -129,12 +130,29 @@ export default function AdminPersonas() {
 
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <Users size={20} strokeWidth={2} className="text-indigo-600" />
+            <Users size={20} strokeWidth={2} className="text-red-600" />
             Todas las Personas Registradas
           </h3>
 
           {cargando ? (
-            <p className="text-sm text-slate-500">Cargando personas...</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500">
+                    <th className="py-2 pr-4 font-medium">CI</th>
+                    <th className="py-2 pr-4 font-medium">Nombre</th>
+                    <th className="py-2 pr-4 font-medium">Correo</th>
+                    <th className="py-2 pr-4 font-medium">Teléfono</th>
+                    <th className="py-2 pr-4 font-medium">Dirección</th>
+                    <th className="py-2 pr-4 font-medium">Rol</th>
+                    <th className="py-2 pr-4 font-medium">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <SkeletonTableRows rows={4} columns={7} />
+                </tbody>
+              </table>
+            </div>
           ) : personas.length === 0 ? (
             <p className="text-sm text-slate-500">No hay personas registradas.</p>
           ) : (
@@ -203,7 +221,7 @@ export default function AdminPersonas() {
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <Pencil size={20} strokeWidth={2} className="text-indigo-600" />
+                <Pencil size={20} strokeWidth={2} className="text-red-600" />
                 Editar Persona (CI {personaEditando.ci})
               </h3>
               <button
@@ -229,7 +247,7 @@ export default function AdminPersonas() {
                   required
                   value={form.nombre}
                   onChange={(e) => updateForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -238,7 +256,7 @@ export default function AdminPersonas() {
                   type="text"
                   value={form.apepaterno}
                   onChange={(e) => updateForm('apepaterno', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -248,7 +266,7 @@ export default function AdminPersonas() {
                   required
                   value={form.correo}
                   onChange={(e) => updateForm('correo', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -257,7 +275,7 @@ export default function AdminPersonas() {
                   type="text"
                   value={form.telefono}
                   onChange={(e) => updateForm('telefono', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -266,7 +284,7 @@ export default function AdminPersonas() {
                   type="text"
                   value={form.direccion}
                   onChange={(e) => updateForm('direccion', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
@@ -281,7 +299,7 @@ export default function AdminPersonas() {
                 <button
                   type="submit"
                   disabled={guardando}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                 >
                   {guardando ? 'Guardando...' : 'Guardar Cambios'}
                 </button>

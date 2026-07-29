@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import EstadoBadge from '../components/EstadoBadge';
 import AppShell from '../components/AppShell';
 import PedidoMapa from '../components/PedidoMapa';
+import { Skeleton } from '../components/Skeleton';
 import {
   Home,
   PackageSearch,
@@ -105,7 +106,21 @@ export default function RepartidorPanel() {
   if (cargando) {
     return (
       <AppShell roleLabel="Repartidor" navItems={REPARTIDOR_NAV_ITEMS}>
-        <p className="text-sm text-slate-400">Cargando...</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-72 w-full rounded-xl" />
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
+              <Skeleton className="h-5 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          </div>
+        </div>
       </AppShell>
     );
   }
@@ -173,7 +188,7 @@ export default function RepartidorPanel() {
                   </div>
                   <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
                     <span className="text-sm font-medium text-slate-700">Total</span>
-                    <span className="text-lg font-semibold text-indigo-600">
+                    <span className="text-lg font-semibold text-red-600">
                       Bs. {parseFloat(pedidoActual.total).toFixed(2)}
                     </span>
                   </div>
@@ -191,7 +206,7 @@ export default function RepartidorPanel() {
                 ) : (
                   <>
                     <h3 className="flex items-center gap-2 font-semibold text-slate-800 mb-3">
-                      <KeyRound size={16} className="text-indigo-600" />
+                      <KeyRound size={16} className="text-red-600" />
                       Confirmar entrega
                     </h3>
                     <p className="text-sm text-slate-500 mb-3">
@@ -211,12 +226,12 @@ export default function RepartidorPanel() {
                         value={tokenInput}
                         onChange={(e) => setTokenInput(e.target.value.replace(/\D/g, ''))}
                         placeholder="00000"
-                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-center text-lg tracking-widest font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-center text-lg tracking-widest font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
                       />
                       <button
                         type="submit"
                         disabled={confirmando || tokenInput.length !== 5}
-                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                        className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                       >
                         {confirmando ? 'Confirmando...' : 'Confirmar'}
                       </button>
@@ -231,7 +246,7 @@ export default function RepartidorPanel() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <section className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-                <UserRound size={20} className="text-indigo-600" strokeWidth={2} />
+                <UserRound size={20} className="text-red-600" strokeWidth={2} />
                 Mi Información
               </h2>
               <div className="space-y-2.5 text-sm text-slate-600">
@@ -263,7 +278,7 @@ export default function RepartidorPanel() {
 
             <section className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-                <Bike size={20} className="text-indigo-600" strokeWidth={2} />
+                <Bike size={20} className="text-red-600" strokeWidth={2} />
                 Mi Estado Actual
               </h2>
               <EstadoBadge estado={estadoActual} />

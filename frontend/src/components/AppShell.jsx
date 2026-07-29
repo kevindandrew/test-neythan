@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, Package, MapPin } from 'lucide-react';
+import { Menu, X, LogOut, MapPin } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import CarritoFlotante from './CarritoFlotante';
 
@@ -27,8 +27,8 @@ export default function AppShell({ roleLabel, navItems, children }) {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500">
-          <Package size={20} className="text-white" strokeWidth={2} />
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden shrink-0">
+          <img src="/logo.png" alt="Chaski Delivery" className="h-full w-full object-cover" />
         </div>
         <div>
           <p className="text-sm font-semibold text-white leading-none">Chaski Delivery</p>
@@ -46,7 +46,7 @@ export default function AppShell({ roleLabel, navItems, children }) {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 isActive
-                  ? 'bg-indigo-500/15 text-indigo-300'
+                  ? 'bg-red-500/15 text-red-300'
                   : 'text-slate-300 hover:bg-slate-800 hover:text-white'
               }`
             }

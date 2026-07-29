@@ -27,9 +27,9 @@ export default function SimpleBarChart({ data, valuePrefix = '', height = 260 })
         <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} width={48} />
         <Tooltip
           content={<CustomTooltip valuePrefix={valuePrefix} />}
-          cursor={{ fill: '#eef2ff' }}
+          cursor={{ fill: '#fef2f2' }}
         />
-        <Bar dataKey="value" fill="#4f46e5" radius={[4, 4, 0, 0]} maxBarSize={24} />
+        <Bar dataKey="value" fill="#dc2626" radius={[4, 4, 0, 0]} maxBarSize={24} />
       </BarChart>
     </ResponsiveContainer>
   );

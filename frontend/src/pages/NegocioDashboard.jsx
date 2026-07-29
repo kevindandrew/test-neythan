@@ -16,6 +16,7 @@ import { useAuth } from '../auth/AuthContext';
 import AppShell from '../components/AppShell';
 import StatTile from '../components/StatTile';
 import SimpleBarChart from '../components/SimpleBarChart';
+import { Skeleton } from '../components/Skeleton';
 
 export const NEGOCIO_NAV_ITEMS = [
   { to: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
@@ -122,11 +123,11 @@ export default function NegocioDashboard() {
         {/* Facturación por día */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <BarChart3 size={20} strokeWidth={2} className="text-indigo-600" />
+            <BarChart3 size={20} strokeWidth={2} className="text-red-600" />
             Facturación por Día
           </h3>
           {cargando ? (
-            <p className="text-sm text-slate-500">Cargando...</p>
+            <Skeleton className="h-64 w-full rounded-lg" />
           ) : facturasPorDia.length === 0 ? (
             <p className="text-sm text-slate-500">Todavía no hay facturas para graficar.</p>
           ) : (

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Store, Plus, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
+import { SkeletonTableRows } from '../components/Skeleton';
 import { ADMIN_NAV_ITEMS } from './AdminDashboard';
 
 const FORM_CREAR_INICIAL = {
@@ -184,12 +185,12 @@ export default function AdminNegocios() {
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-              <Store size={20} strokeWidth={2} className="text-indigo-600" />
+              <Store size={20} strokeWidth={2} className="text-red-600" />
               Todos los Negocios Registrados
             </h3>
             <button
               onClick={abrirModalCrear}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
             >
               <Plus size={16} strokeWidth={2} />
               Agregar Negocio
@@ -197,7 +198,24 @@ export default function AdminNegocios() {
           </div>
 
           {cargando ? (
-            <p className="text-sm text-slate-500">Cargando negocios...</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500">
+                    <th className="py-2 pr-4 font-medium">ID</th>
+                    <th className="py-2 pr-4 font-medium">Nombre del Negocio</th>
+                    <th className="py-2 pr-4 font-medium">Correo del Negocio</th>
+                    <th className="py-2 pr-4 font-medium">Dueño</th>
+                    <th className="py-2 pr-4 font-medium">Teléfono Dueño</th>
+                    <th className="py-2 pr-4 font-medium">Sucursales</th>
+                    <th className="py-2 pr-4 font-medium">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <SkeletonTableRows rows={4} columns={7} />
+                </tbody>
+              </table>
+            </div>
           ) : negocios.length === 0 ? (
             <p className="text-sm text-slate-500">No hay negocios registrados.</p>
           ) : (
@@ -258,7 +276,7 @@ export default function AdminNegocios() {
           <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <Store size={20} strokeWidth={2} className="text-indigo-600" />
+                <Store size={20} strokeWidth={2} className="text-red-600" />
                 Agregar Nuevo Negocio
               </h3>
               <button
@@ -289,7 +307,7 @@ export default function AdminNegocios() {
                       required
                       value={formCrear.ci}
                       onChange={(e) => updateFormCrear('ci', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div>
@@ -298,7 +316,7 @@ export default function AdminNegocios() {
                       type="text"
                       value={formCrear.telefono}
                       onChange={(e) => updateFormCrear('telefono', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div>
@@ -308,7 +326,7 @@ export default function AdminNegocios() {
                       required
                       value={formCrear.nombre}
                       onChange={(e) => updateFormCrear('nombre', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div>
@@ -317,7 +335,7 @@ export default function AdminNegocios() {
                       type="text"
                       value={formCrear.apepaterno}
                       onChange={(e) => updateFormCrear('apepaterno', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -329,7 +347,7 @@ export default function AdminNegocios() {
                       required
                       value={formCrear.correo}
                       onChange={(e) => updateFormCrear('correo', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -338,7 +356,7 @@ export default function AdminNegocios() {
                       type="text"
                       value={formCrear.direccion}
                       onChange={(e) => updateFormCrear('direccion', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                 </div>
@@ -358,7 +376,7 @@ export default function AdminNegocios() {
                       required
                       value={formCrear.nombre_negocio}
                       onChange={(e) => updateFormCrear('nombre_negocio', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div>
@@ -370,7 +388,7 @@ export default function AdminNegocios() {
                       required
                       value={formCrear.correo_negocio}
                       onChange={(e) => updateFormCrear('correo_negocio', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div>
@@ -380,7 +398,7 @@ export default function AdminNegocios() {
                       required
                       value={formCrear.contrasena}
                       onChange={(e) => updateFormCrear('contrasena', e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                 </div>
@@ -398,7 +416,7 @@ export default function AdminNegocios() {
                 <button
                   type="submit"
                   disabled={creando}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                 >
                   {creando ? 'Guardando...' : 'Guardar Negocio'}
                 </button>
@@ -414,7 +432,7 @@ export default function AdminNegocios() {
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <Pencil size={20} strokeWidth={2} className="text-indigo-600" />
+                <Pencil size={20} strokeWidth={2} className="text-red-600" />
                 Editar Negocio (ID {negocioEditando.id_negocio})
               </h3>
               <button
@@ -442,7 +460,7 @@ export default function AdminNegocios() {
                   required
                   value={formEditar.nombre_negocio}
                   onChange={(e) => updateFormEditar('nombre_negocio', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -454,7 +472,7 @@ export default function AdminNegocios() {
                   required
                   value={formEditar.correo_negocio}
                   onChange={(e) => updateFormEditar('correo_negocio', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -466,7 +484,7 @@ export default function AdminNegocios() {
                   placeholder="Dejar en blanco para no cambiar"
                   value={formEditar.contrasena}
                   onChange={(e) => updateFormEditar('contrasena', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="flex justify-end gap-3 mt-2">
@@ -481,7 +499,7 @@ export default function AdminNegocios() {
                 <button
                   type="submit"
                   disabled={guardando}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                 >
                   {guardando ? 'Guardando...' : 'Guardar Cambios'}
                 </button>

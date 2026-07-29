@@ -3,6 +3,7 @@ import { api } from '../api/client';
 import EstadoBadge from '../components/EstadoBadge';
 import AppShell from '../components/AppShell';
 import StatTile from '../components/StatTile';
+import { Skeleton, SkeletonStatTile, SkeletonTableRows } from '../components/Skeleton';
 import {
   ClipboardList,
   Eye,
@@ -81,29 +82,52 @@ export default function RepartidorComisiones() {
           <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{error}</div>
         )}
 
-        {!cargando && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <StatTile
-              icon={Wallet}
-              label="Comisión acumulada"
-              value={`Bs ${comisionAcumulada.toFixed(2)}`}
-            />
-            <StatTile
-              icon={PackageCheck}
-              label="Pedidos entregados con éxito"
-              value={pedidosEntregados.length}
-            />
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {cargando ? (
+            <>
+              <SkeletonStatTile />
+              <SkeletonStatTile />
+            </>
+          ) : (
+            <>
+              <StatTile
+                icon={Wallet}
+                label="Comisión acumulada"
+                value={`Bs ${comisionAcumulada.toFixed(2)}`}
+              />
+              <StatTile
+                icon={PackageCheck}
+                label="Pedidos entregados con éxito"
+                value={pedidosEntregados.length}
+              />
+            </>
+          )}
+        </div>
 
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-            <ClipboardList size={20} className="text-indigo-600" strokeWidth={2} />
+            <ClipboardList size={20} className="text-red-600" strokeWidth={2} />
             Todos mis Pedidos
           </h2>
 
           {cargando ? (
-            <p className="text-sm text-slate-400">Cargando pedidos...</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500 border-b border-slate-200">
+                    <th className="py-2 pr-2">ID Pedido</th>
+                    <th className="py-2 pr-2">Fecha</th>
+                    <th className="py-2 pr-2">Estado</th>
+                    <th className="py-2 pr-2">Total</th>
+                    <th className="py-2 pr-2">Comisión</th>
+                    <th className="py-2 pr-2">Detalle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <SkeletonTableRows rows={4} columns={6} />
+                </tbody>
+              </table>
+            </div>
           ) : pedidos.length === 0 ? (
             <p className="text-sm text-slate-400">Todavía no tomaste ningún pedido.</p>
           ) : (
@@ -138,7 +162,7 @@ export default function RepartidorComisiones() {
                       <td className="py-2 pr-2">
                         <button
                           onClick={() => verDetalle(p.id_pedido)}
-                          className="inline-flex items-center gap-1.5 text-sm border border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-lg px-3 py-1.5 transition"
+                          className="inline-flex items-center gap-1.5 text-sm border border-red-600 text-red-600 hover:bg-red-50 rounded-lg px-3 py-1.5 transition"
                         >
                           <Eye size={14} />
                           Ver detalle
@@ -159,7 +183,7 @@ export default function RepartidorComisiones() {
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <ClipboardList size={20} className="text-indigo-600" />
+                <ClipboardList size={20} className="text-red-600" />
                 Detalle del Pedido {pedidoDetalle ? `#${pedidoDetalle.id_pedido}` : ''}
               </h3>
               <button onClick={cerrarModal} className="text-slate-400 hover:text-slate-600" aria-label="Cerrar">
@@ -168,7 +192,22 @@ export default function RepartidorComisiones() {
             </div>
 
             {cargandoDetalle ? (
-              <p className="text-sm text-slate-400 py-6 text-center">Cargando detalle...</p>
+              <div className="space-y-4 py-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4 space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
             ) : errorDetalle ? (
               <div className="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-2">{errorDetalle}</div>
             ) : pedidoDetalle ? (
@@ -182,7 +221,7 @@ export default function RepartidorComisiones() {
 
                 <div className="rounded-xl border border-slate-200 p-4">
                   <p className="flex items-center gap-2 font-medium text-slate-800 mb-2">
-                    <UserRound size={16} className="text-indigo-600" />
+                    <UserRound size={16} className="text-red-600" />
                     {pedidoDetalle.cliente_nombre}
                   </p>
                   <p className="flex items-center gap-2 text-sm text-slate-600 mb-1">
@@ -197,7 +236,7 @@ export default function RepartidorComisiones() {
 
                 <div>
                   <p className="flex items-center gap-2 font-medium text-slate-800 mb-2">
-                    <ShoppingBag size={16} className="text-indigo-600" />
+                    <ShoppingBag size={16} className="text-red-600" />
                     Productos
                   </p>
                   <div className="space-y-1.5">
@@ -217,7 +256,7 @@ export default function RepartidorComisiones() {
 
                 <div className="flex justify-between items-center border-t border-slate-200 pt-3">
                   <span className="text-sm font-medium text-slate-700">Total del pedido</span>
-                  <span className="text-lg font-semibold text-indigo-600">
+                  <span className="text-lg font-semibold text-red-600">
                     Bs. {parseFloat(pedidoDetalle.total).toFixed(2)}
                   </span>
                 </div>

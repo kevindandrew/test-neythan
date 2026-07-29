@@ -35,7 +35,7 @@ CREATE TABLE negocio (
     nombre_negocio VARCHAR(150) NOT NULL DEFAULT '',
     ci_dueno INT NOT NULL,
     correo_negocio VARCHAR(150) NOT NULL UNIQUE,
-    contrasena VARCHAR(100) NOT NULL DEFAULT '123456',
+    contrasena VARCHAR(100) NOT NULL DEFAULT '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm',
     FOREIGN KEY (ci_dueno) REFERENCES persona(ci)
 );
 
@@ -176,6 +176,10 @@ CREATE TABLE factura (
 
 -- ==========================================
 -- Datos semilla mínimos para poder probar los 3 tipos de login
+-- Nota: las contraseñas se guardan hasheadas con bcrypt, nunca en texto plano.
+-- Los valores '$2b$12$...' de abajo son el hash de '123456' (o 'admin123' para
+-- el administrador); para iniciar sesión seguí usando la contraseña en texto
+-- plano documentada en el README, no el hash.
 -- ==========================================
 
 INSERT INTO reporte (id_reporte, descripcion) VALUES (1, 'Reporte inicial');
@@ -183,18 +187,18 @@ INSERT INTO reporte (id_reporte, descripcion) VALUES (1, 'Reporte inicial');
 -- Cliente de prueba: cliente@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (1001, 'Juan', 'Perez', '70000001', 'cliente@chaski.com', 'Av. Siempre Viva 123');
-INSERT INTO cliente (ci_cliente, contrasena) VALUES (1001, '123456');
+INSERT INTO cliente (ci_cliente, contrasena) VALUES (1001, '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
 
 -- Dueño de negocio de prueba: negocio@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2001, 'Maria', 'Lopez', '70000002', 'negocio@chaski.com', 'Calle Comercio 456');
-INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES ('El Buen Sabor', 2001, 'negocio@chaski.com', '123456');
+INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES ('El Buen Sabor', 2001, 'negocio@chaski.com', '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
 
 -- Repartidor de prueba: repartidor@chaski.com / 123456
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (3001, 'Carlos', 'Gomez', '70000003', 'repartidor@chaski.com', 'Zona Sur 789');
 INSERT INTO repartidor (ci_repartidor, contrasena, nro_licencia, estado_disponible) VALUES
-(3001, '123456', 'LIC-001', 'disponible');
+(3001, '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm', 'LIC-001', 'disponible');
 
 INSERT INTO vehiculo (ci_repartidor, tipo, placa, modelo, color) VALUES
 (3001, 'Motocicleta', '1234-ABC', 'Honda Wave 110', 'Rojo');
@@ -224,7 +228,7 @@ INSERT INTO tarifa (zona, costo) VALUES
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2002, 'Roberto', 'Fernandez', '70055002', 'pizzanostra@chaski.com', 'Av. San Martin 200');
 INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES
-('Pizza Nostra', 2002, 'pizzanostra@chaski.com', '123456');
+('Pizza Nostra', 2002, 'pizzanostra@chaski.com', '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
 SET @id_pizza = LAST_INSERT_ID();
 
 INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Norte', 'Av. Cristo Redentor 500', '70099101', @id_pizza);
@@ -248,7 +252,7 @@ INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_pizza_sur, @prod3
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (2003, 'Lucia', 'Vargas', '70055003', 'sushiichiban@chaski.com', 'Av. Monseñor Rivero 150');
 INSERT INTO negocio (nombre_negocio, ci_dueno, correo_negocio, contrasena) VALUES
-('Sushi Ichiban', 2003, 'sushiichiban@chaski.com', '123456');
+('Sushi Ichiban', 2003, 'sushiichiban@chaski.com', '$2b$12$lKNsmcsQyeW3WPcmZ.hQ1eKfpmM/.0/7m/F12UTXW44LHoa3eTfTm');
 SET @id_sushi = LAST_INSERT_ID();
 
 INSERT INTO sucursal (nombre, direccion, telefono, id_negocio) VALUES ('Sucursal Equipetrol', 'Calle Portugal 45', '70099201', @id_sushi);
@@ -274,4 +278,4 @@ INSERT INTO cuenta_con (id_sucursal, id_producto) VALUES (@suc_sushi_palmas, @pr
 
 INSERT INTO persona (ci, nombre, apepaterno, telefono, correo, direccion) VALUES
 (9999, 'Admin', 'Chaski', '70000000', 'admin@chaski.com', 'Oficina Central');
-INSERT INTO administrador (ci_admin, contrasena) VALUES (9999, 'admin123');
+INSERT INTO administrador (ci_admin, contrasena) VALUES (9999, '$2b$12$bDAmENsAmSXUSXQFuw/fW.rJHv.HveIyf6MnS4eTNbUiNGiQBJOh2');

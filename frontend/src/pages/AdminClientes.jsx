@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { UserRound, UserPlus, Plus, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
+import { SkeletonTableRows } from '../components/Skeleton';
 import { ADMIN_NAV_ITEMS } from './AdminDashboard';
 
 const FORM_INICIAL = {
@@ -179,12 +180,12 @@ export default function AdminClientes() {
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-              <UserRound size={20} strokeWidth={2} className="text-indigo-600" />
+              <UserRound size={20} strokeWidth={2} className="text-red-600" />
               Todos los Clientes Registrados
             </h3>
             <button
               onClick={abrirModalCrear}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
             >
               <Plus size={16} strokeWidth={2} />
               Agregar Cliente
@@ -192,7 +193,24 @@ export default function AdminClientes() {
           </div>
 
           {cargando ? (
-            <p className="text-sm text-slate-500">Cargando clientes...</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500">
+                    <th className="py-2 pr-4 font-medium">CI</th>
+                    <th className="py-2 pr-4 font-medium">Nombre</th>
+                    <th className="py-2 pr-4 font-medium">Correo</th>
+                    <th className="py-2 pr-4 font-medium">Teléfono</th>
+                    <th className="py-2 pr-4 font-medium">Dirección</th>
+                    <th className="py-2 pr-4 font-medium">Zona</th>
+                    <th className="py-2 pr-4 font-medium">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <SkeletonTableRows rows={4} columns={7} />
+                </tbody>
+              </table>
+            </div>
           ) : clientes.length === 0 ? (
             <p className="text-sm text-slate-500">No hay clientes registrados.</p>
           ) : (
@@ -253,7 +271,7 @@ export default function AdminClientes() {
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <UserPlus size={20} strokeWidth={2} className="text-indigo-600" />
+                <UserPlus size={20} strokeWidth={2} className="text-red-600" />
                 Agregar Nuevo Cliente
               </h3>
               <button
@@ -279,7 +297,7 @@ export default function AdminClientes() {
                   required
                   value={form.ci}
                   onChange={(e) => updateForm('ci', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -289,7 +307,7 @@ export default function AdminClientes() {
                   required
                   value={form.nombre}
                   onChange={(e) => updateForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -298,7 +316,7 @@ export default function AdminClientes() {
                   type="text"
                   value={form.apepaterno}
                   onChange={(e) => updateForm('apepaterno', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -307,7 +325,7 @@ export default function AdminClientes() {
                   type="text"
                   value={form.telefono}
                   onChange={(e) => updateForm('telefono', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -317,7 +335,7 @@ export default function AdminClientes() {
                   required
                   value={form.correo}
                   onChange={(e) => updateForm('correo', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -327,7 +345,7 @@ export default function AdminClientes() {
                   value={form.direccion}
                   onChange={(e) => updateForm('direccion', e.target.value)}
                   placeholder="Dirección tal cual aparece en Google Maps"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -335,7 +353,7 @@ export default function AdminClientes() {
                 <select
                   value={form.zona}
                   onChange={(e) => updateForm('zona', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">Sin zona</option>
                   {tarifas.map((t) => (
@@ -352,7 +370,7 @@ export default function AdminClientes() {
                   required
                   value={form.contrasena}
                   onChange={(e) => updateForm('contrasena', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
@@ -367,7 +385,7 @@ export default function AdminClientes() {
                 <button
                   type="submit"
                   disabled={guardando}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                 >
                   {guardando ? 'Guardando...' : 'Guardar Cliente'}
                 </button>
@@ -383,7 +401,7 @@ export default function AdminClientes() {
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <Pencil size={20} strokeWidth={2} className="text-indigo-600" />
+                <Pencil size={20} strokeWidth={2} className="text-red-600" />
                 Editar Cliente (CI {clienteEditando.ci_cliente})
               </h3>
               <button
@@ -409,7 +427,7 @@ export default function AdminClientes() {
                   required
                   value={form.nombre}
                   onChange={(e) => updateForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -418,7 +436,7 @@ export default function AdminClientes() {
                   type="text"
                   value={form.apepaterno}
                   onChange={(e) => updateForm('apepaterno', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -427,7 +445,7 @@ export default function AdminClientes() {
                   type="text"
                   value={form.telefono}
                   onChange={(e) => updateForm('telefono', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -437,7 +455,7 @@ export default function AdminClientes() {
                   required
                   value={form.correo}
                   onChange={(e) => updateForm('correo', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -447,7 +465,7 @@ export default function AdminClientes() {
                   value={form.direccion}
                   onChange={(e) => updateForm('direccion', e.target.value)}
                   placeholder="Dirección tal cual aparece en Google Maps"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -455,7 +473,7 @@ export default function AdminClientes() {
                 <select
                   value={form.zona}
                   onChange={(e) => updateForm('zona', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">Sin zona</option>
                   {tarifas.map((t) => (
@@ -474,7 +492,7 @@ export default function AdminClientes() {
                   placeholder="Dejar en blanco para no cambiar"
                   value={form.contrasena}
                   onChange={(e) => updateForm('contrasena', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end gap-3 mt-2">
@@ -489,7 +507,7 @@ export default function AdminClientes() {
                 <button
                   type="submit"
                   disabled={guardando}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                 >
                   {guardando ? 'Guardando...' : 'Guardar Cambios'}
                 </button>

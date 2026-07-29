@@ -3,6 +3,7 @@ import { Package, Plus, Minus, X } from 'lucide-react';
 import { api } from '../api/client';
 import { useCart } from '../cart/CartContext';
 import { imagenProducto } from '../utils/placeholderImage';
+import { Skeleton } from './Skeleton';
 
 /**
  * Modal de producto: a la izquierda la imagen grande del producto enfocado
@@ -71,7 +72,7 @@ export default function SelectorProductos({
         <div className="flex items-start justify-between px-6 pt-6">
           <div className="min-w-0">
             <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 truncate">
-              <Package size={18} className="text-indigo-600 shrink-0" />
+              <Package size={18} className="text-red-600 shrink-0" />
               {sucursalNombre}
             </h5>
             {nombreNegocio && <p className="text-xs text-slate-400 mt-0.5 truncate">{nombreNegocio}</p>}
@@ -92,7 +93,27 @@ export default function SelectorProductos({
         )}
 
         {cargando ? (
-          <p className="text-sm text-slate-400 px-6 py-8">Cargando productos...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 overflow-hidden mt-4 flex-1 min-h-0">
+            {/* Columna izquierda: producto enfocado */}
+            <div className="p-6 flex flex-col gap-3">
+              <Skeleton className="w-full h-48 rounded-xl" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+
+            {/* Columna derecha: resto de productos de la sucursal */}
+            <div className="border-t sm:border-t-0 sm:border-l border-slate-100 p-4 space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5">
+                  <Skeleton className="h-14 w-14 rounded-lg shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-3.5 w-3/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : productos.length === 0 ? (
           <p className="text-sm text-slate-400 px-6 py-8">No hay productos en esta sucursal.</p>
         ) : (
@@ -102,7 +123,7 @@ export default function SelectorProductos({
               {productoFocal && (
                 <>
                   <img
-                    src={imagenProducto(productoFocal.id_producto)}
+                    src={imagenProducto(productoFocal.id_producto, productoFocal.nombre_producto)}
                     alt={productoFocal.nombre_producto}
                     className="w-full h-48 object-cover rounded-xl mb-4"
                     loading="lazy"
@@ -122,7 +143,7 @@ export default function SelectorProductos({
                             onClick={() => cart.decrementar(productoFocal.id_producto)}
                             disabled={enCarritoFocal <= 1}
                             aria-label="Restar cantidad"
-                            className="p-2.5 text-slate-500 hover:text-indigo-600 disabled:opacity-40"
+                            className="p-2.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
                           >
                             <Minus size={15} />
                           </button>
@@ -133,7 +154,7 @@ export default function SelectorProductos({
                             onClick={() => cart.incrementar(productoFocal.id_producto)}
                             disabled={enCarritoFocal >= productoFocal.stock}
                             aria-label="Sumar cantidad"
-                            className="p-2.5 text-slate-500 hover:text-indigo-600 disabled:opacity-40"
+                            className="p-2.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
                           >
                             <Plus size={15} />
                           </button>
@@ -148,7 +169,7 @@ export default function SelectorProductos({
                     ) : (
                       <button
                         onClick={() => agregar(productoFocal)}
-                        className="w-full inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2.5 transition"
+                        className="w-full inline-flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2.5 transition"
                       >
                         <Plus size={16} />
                         Añadir al carrito
@@ -170,12 +191,12 @@ export default function SelectorProductos({
                     onClick={() => setFocoId(p.id_producto)}
                     className={`w-full flex items-center gap-3 rounded-xl border p-2.5 text-left transition ${
                       enfocado
-                        ? 'border-indigo-400 ring-2 ring-indigo-100 bg-indigo-50/40'
-                        : 'border-slate-200 hover:border-indigo-300'
+                        ? 'border-red-400 ring-2 ring-red-100 bg-red-50/40'
+                        : 'border-slate-200 hover:border-red-300'
                     }`}
                   >
                     <img
-                      src={imagenProducto(p.id_producto)}
+                      src={imagenProducto(p.id_producto, p.nombre_producto)}
                       alt={p.nombre_producto}
                       className="h-14 w-14 rounded-lg object-cover shrink-0"
                       loading="lazy"
@@ -187,7 +208,7 @@ export default function SelectorProductos({
                       <p className="text-xs text-slate-500">Bs. {p.precio}</p>
                     </div>
                     {enCarrito > 0 && (
-                      <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white text-xs font-semibold">
+                      <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">
                         {enCarrito}
                       </span>
                     )}

@@ -3,6 +3,7 @@ import { Bike, Save } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import AppShell from '../components/AppShell';
+import { Skeleton } from '../components/Skeleton';
 import { REPARTIDOR_NAV_ITEMS } from './RepartidorPanel';
 
 const FORM_INICIAL = { tipo: '', placa: '', modelo: '', color: '' };
@@ -83,12 +84,18 @@ export default function RepartidorVehiculo() {
           <img src={fotoUrl} alt="Vehículo" className="w-full h-48 object-cover" loading="lazy" />
           <div className="p-6">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-              <Bike size={20} className="text-indigo-600" strokeWidth={2} />
+              <Bike size={20} className="text-red-600" strokeWidth={2} />
               Mi Vehículo
             </h2>
 
             {cargando ? (
-              <p className="text-sm text-slate-400">Cargando...</p>
+              <div className="space-y-2.5">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-9 w-32 rounded-lg mt-2" />
+              </div>
             ) : editando ? (
               <form onSubmit={guardar} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -97,7 +104,7 @@ export default function RepartidorVehiculo() {
                     required
                     value={form.tipo}
                     onChange={(e) => updateForm('tipo', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="">Seleccioná un tipo</option>
                     <option value="Motocicleta">Motocicleta</option>
@@ -113,7 +120,7 @@ export default function RepartidorVehiculo() {
                     required
                     value={form.placa}
                     onChange={(e) => updateForm('placa', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 <div>
@@ -122,7 +129,7 @@ export default function RepartidorVehiculo() {
                     type="text"
                     value={form.modelo}
                     onChange={(e) => updateForm('modelo', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 <div>
@@ -131,7 +138,7 @@ export default function RepartidorVehiculo() {
                     type="text"
                     value={form.color}
                     onChange={(e) => updateForm('color', e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 <div className="sm:col-span-2 flex justify-end gap-3">
@@ -147,7 +154,7 @@ export default function RepartidorVehiculo() {
                   <button
                     type="submit"
                     disabled={guardando}
-                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
+                    className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-2 text-sm transition"
                   >
                     <Save size={16} />
                     {guardando ? 'Guardando...' : 'Guardar'}
@@ -174,7 +181,7 @@ export default function RepartidorVehiculo() {
                 </div>
                 <button
                   onClick={() => setEditando(true)}
-                  className="text-sm border border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-lg px-4 py-2 transition"
+                  className="text-sm border border-red-600 text-red-600 hover:bg-red-50 rounded-lg px-4 py-2 transition"
                 >
                   Editar datos
                 </button>

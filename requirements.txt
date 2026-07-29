@@ -3,3 +3,5 @@ flask-cors==6.0.5
 flask-jwt-extended==4.7.4
 flask-mysqldb==2.0.0
 mysqlclient==2.2.8
+bcrypt==4.0.1
+python-dotenv==1.1.0

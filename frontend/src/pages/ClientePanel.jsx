@@ -4,6 +4,7 @@ import { Home, Heart, ShoppingBag, Search, Sparkles, Building2, Store, X, Packag
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
 import SelectorProductos from '../components/SelectorProductos';
+import { Skeleton, SkeletonCardGrid } from '../components/Skeleton';
 import { imagenNegocio, imagenProducto } from '../utils/placeholderImage';
 
 export const CLIENTE_NAV_ITEMS = [
@@ -210,7 +211,7 @@ export default function ClientePanel() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar productos o negocios..."
-            className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-10 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-10 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
           />
           {query && (
             <button
@@ -244,7 +245,7 @@ export default function ClientePanel() {
                           }}
                           className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2"
                         >
-                          <Building2 size={16} className="text-indigo-600 shrink-0" />
+                          <Building2 size={16} className="text-red-600 shrink-0" />
                           <span className="text-sm text-slate-700">{n.nombre_negocio}</span>
                         </button>
                       ))}
@@ -289,7 +290,7 @@ export default function ClientePanel() {
         {/* Para Ti */}
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <Sparkles size={18} className="text-indigo-600" />
+            <Sparkles size={18} className="text-red-600" />
             Para Ti
           </h5>
 
@@ -320,11 +321,11 @@ export default function ClientePanel() {
                       productoInicialId: p.id_producto,
                     })
                   }
-                  className="group text-left rounded-2xl border border-slate-200 bg-white overflow-hidden transition hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5"
+                  className="group text-left rounded-2xl border border-slate-200 bg-white overflow-hidden transition hover:border-red-300 hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <div className="relative">
                     <img
-                      src={imagenProducto(p.id_producto)}
+                      src={imagenProducto(p.id_producto, p.nombre_producto)}
                       alt={p.nombre_producto}
                       className="w-full h-36 object-cover transition duration-300 group-hover:scale-105"
                       loading="lazy"
@@ -342,7 +343,7 @@ export default function ClientePanel() {
                         fill={favoritoIds.has(p.id_producto) ? 'currentColor' : 'none'}
                       />
                     </span>
-                    <span className="absolute bottom-2 left-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-indigo-600 shadow-sm">
+                    <span className="absolute bottom-2 left-2.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-red-600 shadow-sm">
                       Bs. {p.precio}
                     </span>
                   </div>
@@ -362,12 +363,12 @@ export default function ClientePanel() {
         {/* Locales */}
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <Building2 size={18} className="text-indigo-600" />
+            <Building2 size={18} className="text-red-600" />
             Locales
           </h5>
 
           {cargandoNegocios ? (
-            <p className="text-sm text-slate-400">Cargando negocios...</p>
+            <SkeletonCardGrid count={3} className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
           ) : negocios.length === 0 ? (
             <p className="text-sm text-slate-400">No hay negocios disponibles.</p>
           ) : (
@@ -379,10 +380,10 @@ export default function ClientePanel() {
                     key={n.id_negocio}
                     onClick={() => !sinSucursales && abrirNegocioModal(n.id_negocio, n.nombre_negocio)}
                     disabled={sinSucursales}
-                    className="text-left rounded-xl border border-slate-200 overflow-hidden transition hover:border-indigo-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-left rounded-xl border border-slate-200 overflow-hidden transition hover:border-red-300 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <img
-                      src={imagenNegocio(n.id_negocio)}
+                      src={imagenNegocio(n.id_negocio, n.nombre_negocio)}
                       alt={n.nombre_negocio}
                       className="w-full h-32 object-cover"
                       loading="lazy"
@@ -408,7 +409,7 @@ export default function ClientePanel() {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <div>
                 <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                  <Package size={18} className="text-indigo-600" />
+                  <Package size={18} className="text-red-600" />
                   Productos de {sucursalNavegando.nombre}
                 </h5>
                 {sucursalNavegando.nombreNegocio && (
@@ -420,14 +421,14 @@ export default function ClientePanel() {
                   setSucursalNavegando(null);
                   setProductosNavegando([]);
                 }}
-                className="text-sm text-slate-500 hover:text-indigo-600 transition"
+                className="text-sm text-slate-500 hover:text-red-600 transition"
               >
                 Cerrar
               </button>
             </div>
 
             {cargandoProductosNavegando ? (
-              <p className="text-sm text-slate-400">Cargando productos...</p>
+              <SkeletonCardGrid count={4} className="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4" />
             ) : productosNavegando.length === 0 ? (
               <p className="text-sm text-slate-400">Esta sucursal no tiene productos disponibles.</p>
             ) : (
@@ -443,10 +444,10 @@ export default function ClientePanel() {
                         productoInicialId: p.id_producto,
                       })
                     }
-                    className="group text-left rounded-2xl border border-slate-200 bg-white overflow-hidden transition hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5"
+                    className="group text-left rounded-2xl border border-slate-200 bg-white overflow-hidden transition hover:border-red-300 hover:shadow-lg hover:-translate-y-0.5"
                   >
                     <img
-                      src={imagenProducto(p.id_producto)}
+                      src={imagenProducto(p.id_producto, p.nombre_producto)}
                       alt={p.nombre_producto}
                       className="w-full h-32 object-cover transition duration-300 group-hover:scale-105"
                       loading="lazy"
@@ -455,7 +456,7 @@ export default function ClientePanel() {
                       <p className="font-semibold text-slate-800 text-sm truncate">
                         {p.nombre_producto}
                       </p>
-                      <p className="text-sm font-semibold text-indigo-600 mt-1">Bs. {p.precio}</p>
+                      <p className="text-sm font-semibold text-red-600 mt-1">Bs. {p.precio}</p>
                     </div>
                   </button>
                 ))}
@@ -471,7 +472,7 @@ export default function ClientePanel() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                <Store size={18} className="text-indigo-600" />
+                <Store size={18} className="text-red-600" />
                 Sucursales de {negocioModal.nombre}
               </h5>
               <button
@@ -484,7 +485,11 @@ export default function ClientePanel() {
             </div>
 
             {cargandoSucursalesModal ? (
-              <p className="text-sm text-slate-400">Cargando sucursales...</p>
+              <div className="space-y-2">
+                <Skeleton className="h-16 w-full rounded-xl" />
+                <Skeleton className="h-16 w-full rounded-xl" />
+                <Skeleton className="h-16 w-full rounded-xl" />
+              </div>
             ) : sucursalesModal.length === 0 ? (
               <p className="text-sm text-slate-400">Este negocio no tiene sucursales disponibles.</p>
             ) : (
@@ -493,7 +498,7 @@ export default function ClientePanel() {
                   <button
                     key={s.id_sucursal}
                     onClick={() => elegirSucursalDeNegocio(s)}
-                    className="w-full text-left rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition px-4 py-3"
+                    className="w-full text-left rounded-xl border border-slate-200 hover:border-red-300 hover:bg-red-50/40 transition px-4 py-3"
                   >
                     <p className="font-medium text-slate-800 text-sm">{s.nombre_sucursal}</p>
                     <p className="text-xs text-slate-500 mt-0.5">{s.direccion}</p>

@@ -3,6 +3,7 @@ import { FileText, Printer, ArrowLeft, Calendar } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import AppShell from '../components/AppShell';
+import { Skeleton } from '../components/Skeleton';
 import { NEGOCIO_NAV_ITEMS } from './NegocioDashboard';
 
 function claveMes(fechaISO) {
@@ -73,7 +74,7 @@ export default function NegocioReportes() {
             </button>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
             >
               <Printer size={16} />
               Descargar PDF
@@ -119,7 +120,7 @@ export default function NegocioReportes() {
                     <td colSpan={5} className="py-3 pr-4 text-right">
                       Total del mes ({mesActivo.cantidad} facturas)
                     </td>
-                    <td className="py-3 pr-4 text-right text-indigo-600">
+                    <td className="py-3 pr-4 text-right text-red-600">
                       Bs {mesActivo.total.toFixed(2)}
                     </td>
                   </tr>
@@ -141,12 +142,17 @@ export default function NegocioReportes() {
 
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <FileText size={20} strokeWidth={2} className="text-indigo-600" />
+            <FileText size={20} strokeWidth={2} className="text-red-600" />
             Reportes de Ventas
           </h2>
 
           {cargando ? (
-            <p className="text-sm text-slate-500">Cargando reportes...</p>
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+            </div>
           ) : meses.length === 0 ? (
             <p className="text-sm text-slate-500">Todavía no hay facturas para generar reportes.</p>
           ) : (
@@ -154,16 +160,16 @@ export default function NegocioReportes() {
               {meses.map((m) => (
                 <div key={m.clave} className="rounded-xl border border-slate-200 p-4">
                   <p className="flex items-center gap-2 font-semibold text-slate-800 mb-1">
-                    <Calendar size={16} className="text-indigo-600" />
+                    <Calendar size={16} className="text-red-600" />
                     {m.nombre}
                   </p>
                   <p className="text-sm text-slate-500 mb-1">{m.cantidad} facturas</p>
-                  <p className="text-lg font-semibold text-indigo-600 mb-3">
+                  <p className="text-lg font-semibold text-red-600 mb-3">
                     Bs {m.total.toFixed(2)}
                   </p>
                   <button
                     onClick={() => setMesSeleccionado(m.clave)}
-                    className="w-full text-sm border border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-lg px-4 py-2 transition"
+                    className="w-full text-sm border border-red-600 text-red-600 hover:bg-red-50 rounded-lg px-4 py-2 transition"
                   >
                     Ver Reporte
                   </button>

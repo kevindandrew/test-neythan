@@ -5,6 +5,9 @@ venv/
 env/
 .venv/
 
+# Variables de entorno (contienen datos sensibles/locales, nunca a git)
+.env
+
 # Editor / OS
 .vscode/
 .idea/

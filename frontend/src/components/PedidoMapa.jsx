@@ -78,7 +78,7 @@ export default function PedidoMapa({ direccion, etiqueta, origen, destino }) {
             </Marker>
             <Polyline
               positions={[posicionOrigen, posicionDestino]}
-              pathOptions={{ color: '#4f46e5', weight: 4, opacity: 0.7, dashArray: '8 6' }}
+              pathOptions={{ color: '#dc2626', weight: 4, opacity: 0.7, dashArray: '8 6' }}
             />
           </>
         ) : (

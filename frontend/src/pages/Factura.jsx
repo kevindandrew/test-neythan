@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Package, Printer, ArrowLeft } from 'lucide-react';
 import { api } from '../api/client';
+import { Skeleton } from '../components/Skeleton';
 
 function Fila({ label, valor }) {
   return (
@@ -44,7 +45,7 @@ export default function Factura() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-indigo-600 text-white px-4 py-3 print:hidden">
+      <nav className="bg-red-600 text-white px-4 py-3 print:hidden">
         <div className="mx-auto flex max-w-150 items-center gap-2">
           <Package size={18} strokeWidth={2} />
           <span className="font-semibold text-sm">Chaski Delivery - Factura</span>
@@ -54,7 +55,20 @@ export default function Factura() {
       <div className="mx-auto my-6 w-full max-w-150 px-4">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {cargando && (
-            <div className="text-center text-slate-500 py-16 px-6">Cargando factura...</div>
+            <div className="p-8 space-y-4">
+              <div className="text-center space-y-2 mb-2">
+                <Skeleton className="h-6 w-1/2 mx-auto" />
+                <Skeleton className="h-3 w-1/3 mx-auto" />
+              </div>
+              <div className="space-y-2 py-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+              <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
           )}
 
           {!cargando && error && (
@@ -95,7 +109,7 @@ export default function Factura() {
         <div className="flex items-center justify-center gap-3 mt-4 print:hidden">
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-medium px-4 py-2 text-sm transition"
+            className="inline-flex items-center gap-2 rounded-lg border border-red-600 text-red-600 hover:bg-red-50 font-medium px-4 py-2 text-sm transition"
           >
             <Printer size={16} />
             Imprimir / Guardar PDF

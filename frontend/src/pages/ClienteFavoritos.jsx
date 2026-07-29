@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
 import { imagenProducto } from '../utils/placeholderImage';
+import { SkeletonCardGrid } from '../components/Skeleton';
 import { CLIENTE_NAV_ITEMS } from './ClientePanel';
 
 export default function ClienteFavoritos() {
@@ -57,12 +58,12 @@ export default function ClienteFavoritos() {
 
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h5 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <Heart size={18} className="text-indigo-600" />
+            <Heart size={18} className="text-red-600" />
             Mis Favoritos
           </h5>
 
           {cargando ? (
-            <p className="text-sm text-slate-400">Cargando favoritos...</p>
+            <SkeletonCardGrid count={3} className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
           ) : favoritos.length === 0 ? (
             <p className="text-sm text-slate-400">
               Todavía no marcaste ningún producto como favorito. Podés hacerlo desde "Para Ti" en el Inicio.
@@ -75,7 +76,7 @@ export default function ClienteFavoritos() {
                   className="rounded-xl border border-slate-200 overflow-hidden flex flex-col"
                 >
                   <img
-                    src={imagenProducto(p.id_producto)}
+                    src={imagenProducto(p.id_producto, p.nombre_producto)}
                     alt={p.nombre_producto}
                     className="w-full h-28 object-cover"
                     loading="lazy"
@@ -85,11 +86,11 @@ export default function ClienteFavoritos() {
                     <p className="text-xs text-slate-400 mb-1">
                       {p.nombre_negocio} · {p.sucursal_nombre}
                     </p>
-                    <p className="text-sm font-semibold text-indigo-600 mb-3">Bs. {p.precio}</p>
+                    <p className="text-sm font-semibold text-red-600 mb-3">Bs. {p.precio}</p>
                     <div className="mt-auto flex items-center gap-2">
                       <button
                         onClick={() => pedirDeNuevo(p)}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-3 py-1.5 transition"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-3 py-1.5 transition"
                       >
                         <ShoppingCart size={14} />
                         Pedir

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Mail, Lock, Eye, EyeOff, Truck, ShieldCheck, Clock, Store, Navigation } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Truck, ShieldCheck, Clock, Store, Navigation } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 
@@ -25,10 +25,10 @@ const initialRegistro = {
 };
 
 const inputClass =
-  'w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition';
+  'w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition';
 
 const plainInputClass =
-  'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition';
+  'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition';
 
 function Field({ icon: Icon, children }) {
   return (
@@ -104,9 +104,9 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50">
       {/* Panel de marca - solo desktop */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-linear-to-br from-indigo-700 via-indigo-600 to-slate-900 text-white flex-col justify-between p-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-red-700 text-white flex-col p-12 overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
@@ -115,24 +115,24 @@ export default function Login() {
             backgroundSize: '28px 28px',
           }}
         />
-        <div className="relative flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 backdrop-blur">
-            <Package size={22} strokeWidth={2} />
+
+        <div className="relative flex-1 flex items-center justify-center min-h-0">
+          <div className="w-full max-w-sm aspect-square rounded-3xl overflow-hidden shadow-2xl">
+            <img src="/logo.png" alt="Chaski Delivery" className="h-full w-full object-cover" />
           </div>
-          <span className="text-lg font-semibold">Chaski Delivery</span>
         </div>
 
         <div className="relative max-w-md">
           <h2 className="text-3xl font-semibold leading-tight mb-4">
             Gestioná tu negocio de reparto de punta a punta.
           </h2>
-          <p className="text-indigo-100/80 text-sm leading-relaxed">
+          <p className="text-red-100/80 text-sm leading-relaxed">
             Pedidos, sucursales, repartidores y facturación en un solo lugar, pensado para
             clientes, negocios y repartidores.
           </p>
         </div>
 
-        <div className="relative grid grid-cols-3 gap-4 text-indigo-100/90">
+        <div className="relative grid grid-cols-3 gap-4 text-red-100/90 mt-8">
           <div className="flex flex-col gap-2">
             <Truck size={20} />
             <span className="text-xs">Seguimiento de pedidos</span>
@@ -148,16 +148,14 @@ export default function Login() {
         </div>
       </div>
 
+      {/* Banner de marca - solo mobile, ocupa la parte superior */}
+      <div className="lg:hidden w-full aspect-square max-h-72 shrink-0 overflow-hidden">
+        <img src="/logo.png" alt="Chaski Delivery" className="h-full w-full object-cover" />
+      </div>
+
       {/* Formulario */}
       <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-sm">
-          <div className="mb-8 text-center lg:hidden">
-            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-600">
-              <Package size={22} className="text-white" strokeWidth={2} />
-            </div>
-            <h1 className="text-xl font-semibold text-slate-800">Chaski Delivery</h1>
-          </div>
-
           <div className="hidden lg:block mb-8">
             <h1 className="text-2xl font-semibold text-slate-800">
               {modo === 'login' ? 'Bienvenido de nuevo' : 'Creá tu cuenta'}
@@ -226,7 +224,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={cargando}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg py-2.5 text-sm transition"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg py-2.5 text-sm transition"
               >
                 {cargando ? 'Ingresando...' : 'Ingresar'}
               </button>
@@ -368,7 +366,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={cargando}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg py-2.5 text-sm transition"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg py-2.5 text-sm transition"
               >
                 {cargando ? 'Creando cuenta...' : 'Crear cuenta'}
               </button>
@@ -381,7 +379,7 @@ export default function Login() {
                 ¿No tenés cuenta?{' '}
                 <button
                   onClick={() => cambiarModo('registro')}
-                  className="text-indigo-600 font-medium hover:underline"
+                  className="text-red-600 font-medium hover:underline"
                 >
                   Creá una
                 </button>
@@ -391,7 +389,7 @@ export default function Login() {
                 ¿Ya tenés cuenta?{' '}
                 <button
                   onClick={() => cambiarModo('login')}
-                  className="text-indigo-600 font-medium hover:underline"
+                  className="text-red-600 font-medium hover:underline"
                 >
                   Iniciá sesión
                 </button>

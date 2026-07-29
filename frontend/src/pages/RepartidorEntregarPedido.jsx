@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PackageSearch, MapPin, Store, CheckCircle2, X, ShoppingBag, Calendar } from 'lucide-react';
 import { api } from '../api/client';
 import AppShell from '../components/AppShell';
+import { Skeleton } from '../components/Skeleton';
 import { REPARTIDOR_NAV_ITEMS } from './RepartidorPanel';
 
 function ModalDetallePedido({ pedido, aceptando, error, onAceptar, onCerrar }) {
@@ -56,7 +57,7 @@ function ModalDetallePedido({ pedido, aceptando, error, onAceptar, onCerrar }) {
             </div>
             <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
               <span className="text-sm font-medium text-slate-700">Total</span>
-              <span className="text-lg font-semibold text-indigo-600">
+              <span className="text-lg font-semibold text-red-600">
                 Bs. {parseFloat(pedido.total).toFixed(2)}
               </span>
             </div>
@@ -66,7 +67,7 @@ function ModalDetallePedido({ pedido, aceptando, error, onAceptar, onCerrar }) {
         <button
           onClick={onAceptar}
           disabled={aceptando}
-          className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg py-2.5 transition"
+          className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg py-2.5 transition"
         >
           <CheckCircle2 size={16} />
           {aceptando ? 'Aceptando...' : 'Aceptar Pedido'}
@@ -135,12 +136,20 @@ export default function RepartidorEntregarPedido() {
 
         <section className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <PackageSearch size={20} className="text-indigo-600" strokeWidth={2} />
+            <PackageSearch size={20} className="text-red-600" strokeWidth={2} />
             Pedidos Disponibles
           </h2>
 
           {cargando ? (
-            <p className="text-sm text-slate-400">Cargando pedidos disponibles...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-slate-200 p-4 space-y-2">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              ))}
+            </div>
           ) : pedidos.length === 0 ? (
             <p className="text-sm text-slate-400">
               No hay pedidos disponibles para aceptar en este momento.
@@ -151,11 +160,11 @@ export default function RepartidorEntregarPedido() {
                 <button
                   key={p.id_pedido}
                   onClick={() => abrirDetalle(p)}
-                  className="text-left rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition p-4"
+                  className="text-left rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-slate-800">Pedido #{p.id_pedido}</h3>
-                    <span className="text-sm font-semibold text-indigo-600">
+                    <span className="text-sm font-semibold text-red-600">
                       Bs. {parseFloat(p.total).toFixed(2)}
                     </span>
                   </div>

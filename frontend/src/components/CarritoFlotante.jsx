@@ -101,11 +101,11 @@ export default function CarritoFlotante() {
         <button
           onClick={abrir}
           aria-label="Abrir carrito"
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl px-5 py-3.5 transition"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl px-5 py-3.5 transition"
         >
           <span className="relative shrink-0">
             <ShoppingCart size={20} />
-            <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-white text-indigo-600 text-[11px] font-bold">
+            <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-white text-red-600 text-[11px] font-bold">
               {cart.cantidadTotal}
             </span>
           </span>
@@ -147,7 +147,7 @@ export default function CarritoFlotante() {
                 <Link
                   to="/cliente/mis-pedidos"
                   onClick={cerrar}
-                  className="inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg py-2 transition"
+                  className="inline-block w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg py-2 transition"
                 >
                   Ver mis pedidos
                 </Link>
@@ -183,7 +183,7 @@ export default function CarritoFlotante() {
                         value={direccion}
                         onChange={(e) => setDireccion(e.target.value)}
                         placeholder="Dirección tal cual aparece en Google Maps"
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                       />
                     </div>
                     <div>
@@ -194,7 +194,7 @@ export default function CarritoFlotante() {
                       <select
                         value={zonaId}
                         onChange={(e) => setZonaId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                       >
                         {tarifas.map((t) => (
                           <option key={t.id_tarifa} value={t.id_tarifa}>
@@ -217,14 +217,14 @@ export default function CarritoFlotante() {
                           className="rounded-xl border border-slate-200 p-4"
                         >
                           <p className="flex items-center gap-1.5 font-medium text-slate-800 text-sm mb-2">
-                            <Store size={14} className="text-indigo-600" />
+                            <Store size={14} className="text-red-600" />
                             {grupo.nombre_negocio} · {grupo.sucursal_nombre}
                           </p>
                           <div className="space-y-1.5 mb-2">
                             {grupo.items.map((i) => (
                               <div key={i.id_producto} className="flex items-center gap-2">
                                 <img
-                                  src={imagenProducto(i.id_producto)}
+                                  src={imagenProducto(i.id_producto, i.nombre_producto)}
                                   alt={i.nombre_producto}
                                   className="h-8 w-8 rounded-md object-cover shrink-0"
                                   loading="lazy"
@@ -253,14 +253,14 @@ export default function CarritoFlotante() {
                     <span className="text-sm font-medium text-slate-700">
                       Total ({cart.grupos.length} {cart.grupos.length === 1 ? 'tienda' : 'tiendas'})
                     </span>
-                    <span className="text-lg font-semibold text-indigo-600">
+                    <span className="text-lg font-semibold text-red-600">
                       Bs. {(cart.totalCarrito + cart.grupos.length * costoEnvio).toFixed(2)}
                     </span>
                   </div>
                   <button
                     onClick={confirmarCompra}
                     disabled={confirmando || !direccion.trim() || !zonaId}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition"
+                    className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition"
                   >
                     {confirmando ? 'Confirmando...' : 'Confirmar compra'}
                   </button>
@@ -270,7 +270,7 @@ export default function CarritoFlotante() {
               <>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800">
-                    <ShoppingCart size={20} className="text-indigo-600" />
+                    <ShoppingCart size={20} className="text-red-600" />
                     Tu carrito
                   </h3>
                   <button
@@ -291,14 +291,14 @@ export default function CarritoFlotante() {
                     {cart.grupos.map((grupo) => (
                       <div key={grupo.id_sucursal} className="rounded-xl border border-slate-200 p-4">
                         <p className="flex items-center gap-1.5 font-medium text-slate-800 text-sm mb-3">
-                          <Store size={14} className="text-indigo-600" />
+                          <Store size={14} className="text-red-600" />
                           {grupo.nombre_negocio} · {grupo.sucursal_nombre}
                         </p>
                         <div className="space-y-2">
                           {grupo.items.map((i) => (
                             <div key={i.id_producto} className="flex items-center justify-between gap-2">
                               <img
-                                src={imagenProducto(i.id_producto)}
+                                src={imagenProducto(i.id_producto, i.nombre_producto)}
                                 alt={i.nombre_producto}
                                 className="h-10 w-10 rounded-lg object-cover shrink-0"
                                 loading="lazy"
@@ -313,7 +313,7 @@ export default function CarritoFlotante() {
                                     onClick={() => cart.decrementar(i.id_producto)}
                                     disabled={i.cantidad <= 1}
                                     aria-label="Restar cantidad"
-                                    className="p-1.5 text-slate-500 hover:text-indigo-600 disabled:opacity-40"
+                                    className="p-1.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
                                   >
                                     <Minus size={13} />
                                   </button>
@@ -324,7 +324,7 @@ export default function CarritoFlotante() {
                                     onClick={() => cart.incrementar(i.id_producto)}
                                     disabled={i.cantidad >= i.stock}
                                     aria-label="Sumar cantidad"
-                                    className="p-1.5 text-slate-500 hover:text-indigo-600 disabled:opacity-40"
+                                    className="p-1.5 text-slate-500 hover:text-red-600 disabled:opacity-40"
                                   >
                                     <Plus size={13} />
                                   </button>
@@ -348,14 +348,14 @@ export default function CarritoFlotante() {
                 <div className="mt-4 pt-4 border-t border-slate-200">
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-sm font-medium text-slate-700">Subtotal</span>
-                    <span className="text-lg font-semibold text-indigo-600">
+                    <span className="text-lg font-semibold text-red-600">
                       Bs. {cart.totalCarrito.toFixed(2)}
                     </span>
                   </div>
                   <button
                     onClick={() => setVista('checkout')}
                     disabled={cart.grupos.length === 0}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition"
+                    className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition"
                   >
                     Comprar
                   </button>

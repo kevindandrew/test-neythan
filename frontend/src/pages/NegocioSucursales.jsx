@@ -13,6 +13,7 @@ import { useAuth } from '../auth/AuthContext';
 import AppShell from '../components/AppShell';
 import EstadoBadge from '../components/EstadoBadge';
 import SimpleBarChart from '../components/SimpleBarChart';
+import { Skeleton, SkeletonStatTile } from '../components/Skeleton';
 import { NEGOCIO_NAV_ITEMS } from './NegocioDashboard';
 
 const initialForm = { nombre: '', direccion: '' };
@@ -124,7 +125,7 @@ export default function NegocioSucursales() {
           <h2 className="text-xl font-semibold text-slate-800">Desglose Detallado por Sucursal</h2>
           <button
             onClick={abrirModal}
-            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
           >
             <Plus size={16} />
             Registrar Nueva Sucursal
@@ -143,7 +144,7 @@ export default function NegocioSucursales() {
         {!cargando && gananciasPorSucursal.length > 1 && (
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-              <BarChart3 size={20} strokeWidth={2} className="text-indigo-600" />
+              <BarChart3 size={20} strokeWidth={2} className="text-red-600" />
               Ganancias por Sucursal
             </h3>
             <SimpleBarChart data={gananciasPorSucursal} valuePrefix="Bs " />
@@ -151,15 +152,28 @@ export default function NegocioSucursales() {
         )}
 
         {cargando ? (
-          <div className="text-center py-10 text-slate-400 text-sm">
-            Cargando información detallada...
+          <div className="space-y-6">
+            {[0, 1].map((i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+                  <Skeleton className="h-5 w-40" />
+                  <SkeletonStatTile />
+                </div>
+                <div className="p-6 space-y-2">
+                  <Skeleton className="h-3 w-1/3 mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : datos.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center space-y-3">
             <p className="text-slate-600">No hay sucursales registradas.</p>
             <button
               onClick={abrirModal}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg px-4 py-2 transition"
             >
               <Plus size={16} />
               Registrar la primera sucursal
@@ -175,7 +189,7 @@ export default function NegocioSucursales() {
 
               return (
                 <section key={suc.id_sucursal} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                  <div className="bg-indigo-700 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="bg-red-700 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
                     <h4 className="text-lg font-semibold">{suc.nombre || 'Sucursal'}</h4>
                     <div className="flex items-center gap-4">
                       <span className="text-amber-300 font-bold">
@@ -197,7 +211,7 @@ export default function NegocioSucursales() {
                       {suc.direccion || 'No especificada'}
                     </p>
 
-                    <h5 className="flex items-center gap-2 text-indigo-600 font-semibold mb-2">
+                    <h5 className="flex items-center gap-2 text-red-600 font-semibold mb-2">
                       <Package size={16} />
                       Productos en esta Sucursal
                     </h5>
@@ -299,7 +313,7 @@ export default function NegocioSucursales() {
                   required
                   value={form.nombre}
                   onChange={(e) => actualizarForm('nombre', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -309,13 +323,13 @@ export default function NegocioSucursales() {
                   required
                   value={form.direccion}
                   onChange={(e) => actualizarForm('direccion', e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <button
                 type="submit"
                 disabled={guardando}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium rounded-lg py-2 transition"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium rounded-lg py-2 transition"
               >
                 {guardando ? 'Guardando...' : 'Guardar Sucursal'}
               </button>
