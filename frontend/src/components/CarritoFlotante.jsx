@@ -26,6 +26,7 @@ export default function CarritoFlotante() {
   const [direccion, setDireccion] = useState('');
   const [ubicacion, setUbicacion] = useState(null);
   const [tarifas, setTarifas] = useState([]);
+  const [errorTarifas, setErrorTarifas] = useState(false);
   const [zonaId, setZonaId] = useState('');
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState('');
@@ -34,8 +35,14 @@ export default function CarritoFlotante() {
   useEffect(() => {
     api
       .get('/api/tarifas')
-      .then(setTarifas)
-      .catch(() => setTarifas([]));
+      .then((data) => {
+        setTarifas(data);
+        setErrorTarifas(Array.isArray(data) && data.length === 0);
+      })
+      .catch(() => {
+        setTarifas([]);
+        setErrorTarifas(true);
+      });
   }, []);
 
   if (!auth || auth.rol !== 'cliente' || !cart) return null;
@@ -205,7 +212,8 @@ export default function CarritoFlotante() {
                       <select
                         value={zonaId}
                         onChange={(e) => setZonaId(e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                        disabled={errorTarifas}
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
                       >
                         {tarifas.map((t) => (
                           <option key={t.id_tarifa} value={t.id_tarifa}>
@@ -215,6 +223,14 @@ export default function CarritoFlotante() {
                       </select>
                     </div>
                   </div>
+
+                  {errorTarifas && (
+                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-sm px-4 py-2">
+                      No se pudieron cargar las zonas de envío. Verificá que la tabla{' '}
+                      <code>tarifa</code> exista y tenga datos en la base de datos, y volvé a
+                      intentar.
+                    </div>
+                  )}
 
                   <div>
                     <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
